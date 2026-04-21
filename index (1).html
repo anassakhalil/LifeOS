@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LifeOS">
+<meta name="theme-color" content="#080808">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>LifeOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080808;--s1:#0f0f0f;--s2:#161616;--s3:#1e1e1e;
+  --b1:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.11);--b3:rgba(255,255,255,0.18);
+  --tx:#ede9e1;--mu:#777;--di:#444;
+  --ac:#d4f050;--ac2:#3de8a0;--ac3:#e85050;--ac4:#50a8e8;--ac5:#a87ef8;--ac6:#f8a050;--gold:#f8cc50;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:13px;}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:-webkit-fill-available;}
+.topbar{background:var(--s1);border-bottom:1px solid var(--b1);padding:calc(var(--safe-top)+10px) 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tb-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--ac);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-xp{font-family:'DM Mono',monospace;font-size:11px;color:var(--mu);}
+.tb-xp span{color:var(--ac);}
+.tb-lvl{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.bottomnav{background:var(--s1);border-top:1px solid var(--b1);display:flex;padding-bottom:calc(env(safe-area-inset-bottom, 16px) + 4px);flex-shrink:0;position:relative;z-index:100;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;cursor:pointer;color:var(--di);transition:color 0.15s;gap:2px;border:none;background:transparent;}
+.bn-item.on{color:var(--ac);}
+.bn-icon{font-size:16px;line-height:1;}
+.bn-label{font-size:8px;text-transform:uppercase;letter-spacing:0.05em;}
+.page{display:none;padding:14px;padding-bottom:20px;}
+.page.on{display:block;animation:fi 0.18s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.subnav{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;-webkit-overflow-scrolling:touch;}
+.subnav::-webkit-scrollbar{display:none;}
+.sn-btn{padding:5px 11px;font-size:11px;border:1px solid var(--b2);border-radius:20px;cursor:pointer;background:transparent;color:var(--mu);font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
+.sn-btn.on{background:var(--s2);color:var(--tx);border-color:var(--b3);}
+.pt{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;line-height:1;margin-bottom:2px;}
+.ps{font-size:11px;color:var(--mu);margin-bottom:12px;}
+.sec{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1.5px;color:var(--mu);margin-bottom:7px;margin-top:14px;}
+.sec:first-child{margin-top:0;}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:13px;margin-bottom:8px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;}
+.mc{background:var(--s1);border:1px solid var(--b1);border-radius:9px;padding:11px;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.mc-label{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--di);margin-bottom:3px;}
+.mc-val{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;margin-bottom:3px;}
+.mc-bar-bg{background:var(--s3);border-radius:2px;height:3px;margin-bottom:2px;overflow:hidden;}
+.mc-bar{height:3px;border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.mc-desc{font-size:9px;color:var(--di);line-height:1.3;}
+.dr{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--b1);font-size:12px;gap:8px;}
+.dr:last-child{border-bottom:none;}
+.drl{color:var(--mu);flex:1;line-height:1.4;}
+.drv{font-family:'DM Mono',monospace;font-size:11px;color:var(--tx);text-align:right;flex-shrink:0;line-height:1.4;}
+.tag{font-size:9px;padding:1px 5px;border-radius:3px;margin-left:3px;font-weight:500;white-space:nowrap;display:inline-block;}
+.tg{background:rgba(61,232,160,0.15);color:var(--ac2);}
+.tr{background:rgba(232,80,80,0.15);color:var(--ac3);}
+.ty{background:rgba(212,240,80,0.15);color:var(--ac);}
+.tb{background:rgba(80,168,232,0.15);color:var(--ac4);}
+.tp{background:rgba(168,126,248,0.15);color:var(--ac5);}
+.to{background:rgba(248,160,80,0.15);color:var(--ac6);}
+.tgold{background:rgba(248,204,80,0.15);color:var(--gold);}
+.al{border-radius:8px;padding:9px 11px;margin-bottom:7px;font-size:11px;line-height:1.6;}
+.al-r{background:rgba(232,80,80,0.1);border:1px solid rgba(232,80,80,0.2);color:#f87171;}
+.al-y{background:rgba(212,240,80,0.08);border:1px solid rgba(212,240,80,0.15);color:var(--ac);}
+.al-g{background:rgba(61,232,160,0.08);border:1px solid rgba(61,232,160,0.15);color:var(--ac2);}
+.al-p{background:rgba(168,126,248,0.08);border:1px solid rgba(168,126,248,0.15);color:var(--ac5);}
+.xp-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px;}
+.xp-ring{width:88px;height:88px;position:relative;margin-bottom:6px;}
+.xp-ring svg{transform:rotate(-90deg);}
+.xp-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.xp-big{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--ac);line-height:1;}
+.xp-small{font-size:9px;color:var(--di);}
+.xp-status-txt{font-size:10px;color:var(--mu);text-align:center;max-width:150px;line-height:1.4;}
+.nl{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--b1);cursor:pointer;user-select:none;}
+.nl:last-child{border-bottom:none;}
+.nl-chk{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.nl-chk.done{background:var(--ac);border-color:var(--ac);}
+.nl-chk.done::after{content:'✓';font-size:10px;color:#000;font-weight:700;}
+.nl-txt{font-size:12px;flex:1;line-height:1.4;}
+.nl-txt.done{text-decoration:line-through;color:var(--di);}
+.nl-xp{font-size:10px;color:var(--ac);font-family:'DM Mono',monospace;white-space:nowrap;}
+.pg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px;}
+.pc{background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:6px 2px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.pc.done{background:rgba(168,126,248,0.12);border-color:rgba(168,126,248,0.3);}
+.pc-name{font-size:10px;font-weight:500;color:var(--mu);margin-bottom:1px;}
+.pc.done .pc-name{color:var(--ac5);}
+.pc-time{font-size:8px;color:var(--di);}
+.pc-chk{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--b2);margin:3px auto 0;display:flex;align-items:center;justify-content:center;}
+.pc.done .pc-chk{background:var(--ac5);border-color:var(--ac5);}
+.pc.done .pc-chk::after{content:'✓';font-size:8px;color:#fff;font-weight:700;}
+.streak{display:inline-flex;align-items:center;gap:4px;background:rgba(248,204,80,0.1);border:1px solid rgba(248,204,80,0.2);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--gold);}
+.fi-label{font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--di);margin-bottom:3px;display:block;}
+.fi{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:8px 11px;font-size:13px;color:var(--tx);width:100%;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;margin-bottom:8px;}
+.fi:focus{border-color:rgba(212,240,80,0.35);}
+.fs{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:7px 11px;font-size:12px;color:var(--tx);width:100%;font-family:'DM Sans',sans-serif;outline:none;height:36px;cursor:pointer;margin-bottom:8px;}
+.btn-ac{background:var(--ac);color:#000;border:none;border-radius:7px;padding:11px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:opacity 0.15s;margin-top:2px;}
+.btn-ac:active{opacity:0.85;}
+.btn-ghost{background:transparent;color:var(--mu);border:1px solid var(--b2);border-radius:7px;padding:9px 16px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all 0.15s;margin-top:6px;}
+.btn-ghost:active{background:var(--s2);color:var(--tx);}
+.phase-row{display:flex;gap:2px;height:24px;margin-bottom:5px;}
+.ph-seg{border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:500;padding:0 4px;white-space:nowrap;overflow:hidden;}
+.cd-big{text-align:center;padding:14px 0 8px;}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--ac);line-height:1;}
+.cd-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+.sb{background:var(--s2);border-radius:6px;padding:8px 10px;margin-bottom:5px;border-left:3px solid;}
+.sb-t{font-family:'DM Mono',monospace;font-size:9px;color:var(--di);margin-bottom:2px;}
+.sb-h{font-size:11px;font-weight:500;color:var(--tx);margin-bottom:1px;}
+.sb-d{font-size:10px;color:var(--mu);line-height:1.4;}
+.tl{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--b1);}
+.tl:last-child{border-bottom:none;}
+.tl-t{font-family:'DM Mono',monospace;font-size:9px;color:var(--ac);min-width:48px;padding-top:1px;flex-shrink:0;}
+.tl-d{flex:1;}
+.tl-h{font-size:11px;font-weight:500;color:var(--tx);margin-bottom:1px;}
+.tl-b{font-size:10px;color:var(--mu);line-height:1.4;}
+.macro-bar{display:flex;height:5px;border-radius:2px;overflow:hidden;gap:1px;margin:5px 0 3px;}
+.macro-legend{display:flex;gap:8px;font-size:9px;color:var(--mu);}
+.ml-dot{width:6px;height:6px;border-radius:2px;flex-shrink:0;}
+.wv{background:var(--s2);border-radius:8px;padding:10px;margin-bottom:6px;border-left:3px solid;}
+.wv-title{font-size:11px;font-weight:500;color:var(--tx);margin-bottom:2px;}
+.wv-body{font-size:10px;color:var(--mu);line-height:1.5;margin-bottom:4px;}
+.wv-verdict{font-size:9px;padding:2px 7px;border-radius:4px;display:inline-block;}
+.qi{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:10px;margin-bottom:6px;}
+.qi-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:5px;}
+.qi-title{font-size:11px;font-weight:500;color:var(--tx);}
+.qi-bg{background:var(--s3);border-radius:2px;height:4px;overflow:hidden;margin-bottom:2px;}
+.qi-bar{height:4px;border-radius:2px;}
+.qi-detail{font-size:10px;color:var(--mu);margin-top:4px;line-height:1.4;}
+.tt-mile{background:var(--s2);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;align-items:flex-start;gap:9px;}
+.tt-num{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;flex-shrink:0;min-width:36px;}
+.tt-info h4{font-size:11px;font-weight:500;color:var(--tx);margin-bottom:2px;}
+.tt-info p{font-size:10px;color:var(--mu);line-height:1.4;}
+.tt-badge{font-size:9px;padding:2px 5px;border-radius:3px;margin-top:3px;display:inline-block;}
+.nw-total{text-align:center;padding:12px 0 8px;}
+.nw-num{font-family:'Bebas Neue',sans-serif;font-size:46px;line-height:1;}
+.nw-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+.nw-bar-wrap{background:var(--s3);border-radius:4px;height:7px;overflow:hidden;margin:8px 0 3px;}
+.nw-bar-fill{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--ac5),var(--ac));transition:width 1s ease;}
+.nw-targets{display:flex;justify-content:space-between;font-size:8px;color:var(--di);margin-bottom:10px;}
+.contr{background:rgba(232,80,80,0.07);border:1px solid rgba(232,80,80,0.18);border-radius:8px;padding:10px;margin-bottom:7px;}
+.contr-t{font-size:10px;font-weight:500;color:#f87171;margin-bottom:3px;}
+.contr-b{font-size:10px;color:var(--mu);line-height:1.5;}
+.contr-f{font-size:10px;color:var(--ac);margin-top:4px;}
+.ri{display:flex;gap:7px;padding:7px 0;border-bottom:1px solid var(--b1);font-size:10px;}
+.ri:last-child{border-bottom:none;}
+.ri-icon{width:15px;height:15px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;margin-top:1px;}
+.ri-stop{background:rgba(232,80,80,0.2);color:#f87171;}
+.ri-warn{background:rgba(212,240,80,0.15);color:var(--ac);}
+.ri-go{background:rgba(61,232,160,0.15);color:var(--ac2);}
+/* CHARTS */
+.chart-wrap{position:relative;width:100%;background:var(--s2);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+.chart-canvas{width:100%;display:block;}
+.chart-empty{padding:30px;text-align:center;color:var(--di);font-size:11px;}
+/* HEATMAP */
+.heatmap{display:grid;gap:3px;margin-bottom:8px;}
+.hm-cell{border-radius:2px;cursor:pointer;transition:opacity 0.2s;}
+/* WORKOUT LOG */
+.workout-set{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
+.ws-input{background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:5px 8px;font-size:12px;color:var(--tx);width:60px;outline:none;font-family:'DM Mono',monospace;text-align:center;}
+.ws-label{font-size:10px;color:var(--di);min-width:28px;}
+.add-set-btn{background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:5px 10px;font-size:11px;color:var(--mu);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;margin-top:4px;}
+.add-set-btn:active{background:var(--s3);color:var(--tx);}
+.exercise-block{background:var(--s2);border-radius:8px;padding:10px;margin-bottom:7px;}
+.ex-name{font-size:12px;font-weight:500;color:var(--tx);margin-bottom:7px;}
+/* DHIKR */
+.dhikr-counter{text-align:center;padding:16px 0;}
+.dhikr-num{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--ac5);line-height:1;}
+.dhikr-name{font-size:13px;color:var(--mu);margin-top:4px;}
+.dhikr-btn{width:120px;height:120px;border-radius:50%;background:rgba(168,126,248,0.1);border:2px solid rgba(168,126,248,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:16px auto;transition:all 0.1s;-webkit-tap-highlight-color:transparent;}
+.dhikr-btn:active{background:rgba(168,126,248,0.25);transform:scale(0.96);}
+.dhikr-btn-inner{font-size:11px;color:var(--ac5);text-align:center;line-height:1.4;}
+/* AI COACH */
+.ai-msg{margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;}
+.ai-msg.user{flex-direction:row-reverse;}
+.ai-bubble{max-width:85%;padding:9px 12px;border-radius:12px;font-size:12px;line-height:1.6;}
+.ai-msg.assistant .ai-bubble{background:var(--s2);border:1px solid var(--b1);color:var(--tx);border-radius:4px 12px 12px 12px;}
+.ai-msg.user .ai-bubble{background:rgba(212,240,80,0.1);border:1px solid rgba(212,240,80,0.2);color:var(--ac);border-radius:12px 4px 12px 12px;}
+.ai-avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:2px;}
+.ai-msg.assistant .ai-avatar{background:rgba(168,126,248,0.2);color:var(--ac5);}
+.ai-msg.user .ai-avatar{background:rgba(212,240,80,0.15);color:var(--ac);}
+.ai-input-wrap{display:flex;gap:7px;align-items:flex-end;margin-top:8px;}
+.ai-input{background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--tx);flex:1;font-family:'DM Sans',sans-serif;outline:none;resize:none;line-height:1.4;max-height:100px;}
+.ai-input:focus{border-color:rgba(212,240,80,0.3);}
+.ai-send{background:var(--ac);border:none;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:500;cursor:pointer;color:#000;font-family:'DM Sans',sans-serif;flex-shrink:0;transition:opacity 0.15s;}
+.ai-send:active{opacity:0.8;}
+.ai-thinking{display:flex;gap:4px;padding:8px 12px;background:var(--s2);border-radius:12px;width:fit-content;}
+.ai-thinking span{width:6px;height:6px;border-radius:50%;background:var(--ac5);animation:bounce 1.2s infinite;}
+.ai-thinking span:nth-child(2){animation-delay:0.2s;}
+.ai-thinking span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+.ci-result{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:11px;margin-top:10px;display:none;}
+.ci-rt{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;margin-bottom:5px;}
+::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+<script>window.addEventListener("load",()=>{document.body.style.minHeight=window.innerHeight+"px";});if(!localStorage.getItem("lifeos_apikey")){localStorage.setItem("lifeos_apikey","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");}</script>
+<div class="app">
+<div class="topbar">
+  <div class="tb-logo">LIFE OS</div>
+  <div class="tb-right">
+    <div class="tb-xp">XP <span id="tb-xp">0</span>/100</div>
+    <div class="tb-lvl">LVL <span id="tb-lvl">7</span></div>
+  </div>
+</div>
+
+<div class="content" id="content">
+
+<!-- HOME -->
+<div class="page on" id="page-home">
+  <div class="pt">Command Centre</div>
+  <div class="ps">27M · 255.5 lbs · Pharmacist · Muslim · Builder</div>
+  <div class="g2">
+    <div class="card" style="padding:11px;">
+      <div class="sec" style="margin-top:0;margin-bottom:5px;">Today XP</div>
+      <div class="xp-wrap">
+        <div class="xp-ring">
+          <svg width="88" height="88" viewBox="0 0 88 88">
+            <circle cx="44" cy="44" r="36" fill="none" stroke="#1e1e1e" stroke-width="7"/>
+            <circle cx="44" cy="44" r="36" fill="none" stroke="url(#xpg)" stroke-width="7" stroke-linecap="round" id="xp-ring" stroke-dasharray="226.2" stroke-dashoffset="226.2"/>
+            <defs><linearGradient id="xpg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a87ef8"/><stop offset="100%" stop-color="#d4f050"/></linearGradient></defs>
+          </svg>
+          <div class="xp-center"><div class="xp-big" id="xp-today">0</div><div class="xp-small">/ 100</div></div>
+        </div>
+        <div class="xp-status-txt" id="xp-status">Hit your non-negotiables</div>
+      </div>
+    </div>
+    <div class="card" style="padding:11px;">
+      <div class="sec" style="margin-top:0;margin-bottom:6px;">Status</div>
+      <div class="dr"><span class="drl">Phase</span><span class="drv">1<span class="tag tr">Active</span></span></div>
+      <div class="dr"><span class="drl">Departs</span><span class="drv" id="days-home" style="color:var(--ac);font-size:11px;"></span></div>
+      <div class="dr"><span class="drl">Weight</span><span class="drv"><span id="home-weight" style="color:var(--ac2);">255.5</span> lbs</span></div>
+      <div class="dr"><span class="drl">TikTok</span><span class="drv"><span id="home-tiktok" style="color:var(--ac4);">5K+</span></span></div>
+      <div class="dr"><span class="drl">Net worth</span><span class="drv"><span id="home-nw" style="color:var(--ac2);">£0</span></span></div>
+      <div class="dr"><span class="drl">Streak</span><span class="drv"><span id="streak-home">0</span>d 🔥</span></div>
+    </div>
+  </div>
+  <div class="sec">Prayers Today</div>
+  <div class="pg" id="home-prayers"></div>
+  <div class="sec">Stats</div>
+  <div class="g2" id="stats-grid"></div>
+  <div class="sec">Phase</div>
+  <div class="phase-row">
+    <div class="ph-seg" style="flex:2;background:rgba(232,80,80,0.15);color:#f87171;border:1px solid rgba(232,80,80,0.25);">P1 · Wks 1–3</div>
+    <div class="ph-seg" style="flex:0.5;background:rgba(61,232,160,0.1);color:var(--ac2);border:1px solid rgba(61,232,160,0.2);">Trans</div>
+    <div class="ph-seg" style="flex:5;background:rgba(168,126,248,0.1);color:var(--ac5);border:1px solid rgba(168,126,248,0.2);">Phase 2 · Weeks 5–24</div>
+  </div>
+</div>
+
+<!-- DAILY -->
+<div class="page" id="page-daily">
+  <div class="subnav">
+    <button class="sn-btn on" onclick="subNav('daily','nonneg',this)">Non-Neg</button>
+    <button class="sn-btn" onclick="subNav('daily','schedule',this)">Schedule</button>
+    <button class="sn-btn" onclick="subNav('daily','salah',this)">Salah</button>
+    <button class="sn-btn" onclick="subNav('daily','quran',this)">Quran</button>
+    <button class="sn-btn" onclick="subNav('daily','xplog',this)">XP Log</button>
+    <button class="sn-btn" onclick="subNav('daily','heatmap',this)">Heatmap</button>
+  </div>
+  <div id="daily-nonneg">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="streak">🔥 <span id="streak-nn">0</span> day streak</div>
+      <div style="font-size:11px;color:var(--mu);"><span id="nn-xp" style="color:var(--ac);font-family:'DM Mono',monospace;font-weight:500;">0</span>/100 XP today</div>
+    </div>
+    <div class="card" id="nn-list"></div>
+  </div>
+  <div id="daily-schedule" style="display:none;">
+    <div class="subnav"><button class="sn-btn on" onclick="toggleSched('train',this)">Training</button><button class="sn-btn" onclick="toggleSched('rest',this)">Rest Day</button></div>
+    <div id="sched-train">
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">5:30 AM</div><div class="sb-h">Wake + Fajr — the anchor</div><div class="sb-d">Alarm across the room. Wudu done night before. If this goes, the day goes.</div></div>
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">5:45 AM</div><div class="sb-h">10 mins Quran</div><div class="sb-d">One page minimum. Every single day.</div></div>
+      <div class="sb" style="border-color:var(--ac2);"><div class="sb-t">6:00 AM</div><div class="sb-h">Fasted LISS — 25 mins</div><div class="sb-d">Incline walk. HR 100–115. Before food. ~120 kcal.</div></div>
+      <div class="sb" style="border-color:var(--ac);"><div class="sb-t">6:30 AM</div><div class="sb-h">Meal 1 — 345 kcal · 38P · 9F · 28C</div><div class="sb-d">5 egg whites + 1 egg · 30g oats · spinach · coffee.</div></div>
+      <div class="sb" style="border-color:var(--ac4);"><div class="sb-t">7:00 AM</div><div class="sb-h">TikTok morning block — 30 mins</div><div class="sb-d">Plan content, check analytics, respond to overnight comments.</div></div>
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">12:00 PM</div><div class="sb-h">Dhuhr — prayer room at work</div><div class="sb-d">Protect this. Most lost to "busy at work".</div></div>
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">3:30 PM</div><div class="sb-h">Asr — phone alarm</div><div class="sb-d">Set it now. Alarm removes the decision.</div></div>
+      <div class="sb" style="border-color:var(--ac3);"><div class="sb-t">5:20 PM</div><div class="sb-h">Lift — 60–75 mins</div><div class="sb-d">Main resistance training. Your anchor. Keep it locked.</div></div>
+      <div class="sb" style="border-color:var(--ac2);"><div class="sb-t">6:35 PM</div><div class="sb-h">Post-lift LISS</div><div class="sb-d">Upper: 25–30 min · 8–10% incline. Lower: 10 min drainage only.</div></div>
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">7:00 PM</div><div class="sb-h">Maghrib — on time. Not combined.</div><div class="sb-d">The combining before bed habit ends now.</div></div>
+      <div class="sb" style="border-color:var(--ac4);"><div class="sb-t">8:00 PM</div><div class="sb-h">TikTok wealth block — 1 hour</div><div class="sb-d">Film, edit, schedule, engage. Every day. This builds the vehicle.</div></div>
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">9:00 PM</div><div class="sb-h">Isha — correct time</div><div class="sb-d">Screens off after Isha.</div></div>
+      <div class="sb" style="border-color:var(--ac);"><div class="sb-t">9:30 PM</div><div class="sb-h">Pre-sleep casein — 215 kcal · 42P</div><div class="sb-d">250g 0% Greek yogurt + casein.</div></div>
+      <div class="sb" style="border-color:var(--di);"><div class="sb-t">10:30 PM</div><div class="sb-h">Lights out</div><div class="sb-d">Phone face down. 17–19°C. 7 hrs to Fajr.</div></div>
+    </div>
+    <div id="sched-rest" style="display:none;">
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">5:30 AM</div><div class="sb-h">Wake + Fajr</div><div class="sb-d">Same time every day. Circadian rhythm demands consistency.</div></div>
+      <div class="sb" style="border-color:var(--ac5);"><div class="sb-t">5:45 AM</div><div class="sb-h">Quran — extended session</div><div class="sb-d">No gym rush. 20–30 mins. Rest days = spiritual investment days.</div></div>
+      <div class="sb" style="border-color:var(--ac2);"><div class="sb-t">6:00 AM</div><div class="sb-h">Fasted LISS — 40 mins</div><div class="sb-d">Biggest calorie burn of the rest day. Incline 5–8%. ~180 kcal.</div></div>
+      <div class="sb" style="border-color:var(--ac4);"><div class="sb-t">7:30 AM</div><div class="sb-h">TikTok deep session — 1 hr</div><div class="sb-d">Batch film 5–7 videos. Deepest content work of the week.</div></div>
+      <div class="sb" style="border-color:var(--ac2);"><div class="sb-t">5:00 PM</div><div class="sb-h">Evening LISS — 35 mins</div><div class="sb-d">Double LISS rest day. Post-work walk. Finish by 5:40pm.</div></div>
+      <div class="sb" style="border-color:var(--ac4);"><div class="sb-t">8:00 PM</div><div class="sb-h">TikTok wealth block</div><div class="sb-d">Schedule posts, engage comments, research trends.</div></div>
+      <div class="sb" style="border-color:var(--di);"><div class="sb-t">10:00 PM</div><div class="sb-h">Lights out — 8+ hrs</div><div class="sb-d">Earlier on rest days. Extra sleep = fat loss + recovery.</div></div>
+    </div>
+  </div>
+  <div id="daily-salah" style="display:none;">
+    <div class="al al-r" style="margin-bottom:10px;">Current gap: Fajr missed unless you wake at 7am. Maghrib+Isha combined. Zero Quran. Most important fix in the system.</div>
+    <div class="pg" id="salah-prayers"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="streak">🕌 <span id="salah-perfect">0</span> perfect days</div>
+      <div style="font-size:11px;color:var(--mu);"><span id="salah-count" style="color:var(--ac5);">0</span>/5 today</div>
+    </div>
+    <div class="card">
+      <div class="sec" style="margin-top:0;">Fajr System</div>
+      <div class="dr"><span class="drl">Alarm</span><span class="drv">Fajr time · across the room</span></div>
+      <div class="dr"><span class="drl">Night before</span><span class="drv">Wudu done · removes friction</span></div>
+      <div class="dr"><span class="drl">After Fajr</span><span class="drv">Quran → LISS → do NOT sleep again</span></div>
+      <div class="dr"><span class="drl">Maghrib</span><span class="drv">Pray at its time · never combined</span></div>
+      <div class="dr"><span class="drl">Isha</span><span class="drv">Before 10:30pm · correct time</span></div>
+    </div>
+  </div>
+  <div id="daily-quran" style="display:none;">
+    <div class="card" style="margin-bottom:8px;">
+      <div class="sec" style="margin-top:0;">Dhikr Counter</div>
+      <div class="dhikr-counter">
+        <div class="dhikr-num" id="dhikr-count">0</div>
+        <div class="dhikr-name" id="dhikr-name">SubhanAllah</div>
+      </div>
+      <div class="dhikr-btn" onclick="incrementDhikr()">
+        <div class="dhikr-btn-inner">Tap to<br>count</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <button class="btn-ghost" style="flex:1;margin-top:0;" onclick="nextDhikr()">Next dhikr</button>
+        <button class="btn-ghost" style="flex:1;margin-top:0;" onclick="resetDhikr()">Reset</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:8px;">
+      <div class="sec" style="margin-top:0;">Quran Log Today</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <label class="fi-label" style="margin-bottom:0;flex:1;">Pages read today</label>
+        <input class="fi" type="number" id="quran-pages" placeholder="0" min="0" style="width:70px;margin-bottom:0;" oninput="saveQuran()">
+      </div>
+      <div class="dr"><span class="drl">Today</span><span class="drv"><span id="quran-today">0</span> pages</span></div>
+      <div class="dr"><span class="drl">This week</span><span class="drv"><span id="quran-week">0</span> pages</span></div>
+      <div class="dr"><span class="drl">Target</span><span class="drv">1 page minimum daily → half juz from week 3</span></div>
+    </div>
+    <div class="card">
+      <div class="sec" style="margin-top:0;">Dhikr Targets</div>
+      <div class="dr"><span class="drl">SubhanAllah</span><span class="drv">33× after each prayer</span></div>
+      <div class="dr"><span class="drl">Alhamdulillah</span><span class="drv">33× after each prayer</span></div>
+      <div class="dr"><span class="drl">Allahu Akbar</span><span class="drv">34× after each prayer</span></div>
+      <div class="dr"><span class="drl">Ayatul Kursi</span><span class="drv">After each prayer</span></div>
+      <div class="dr"><span class="drl">Morning adhkar</span><span class="drv">After Fajr daily</span></div>
+    </div>
+  </div>
+  <div id="daily-xplog" style="display:none;">
+    <div class="g2" style="margin-bottom:8px;">
+      <div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Today</div><div class="mc-val" id="log-today">0</div><div class="mc-desc">/ 100 XP</div></div>
+      <div class="mc" style="border-top-color:var(--ac4);"><div class="mc-label">7-day avg</div><div class="mc-val" style="color:var(--ac4);" id="log-avg">—</div><div class="mc-desc">XP/day</div></div>
+      <div class="mc" style="border-top-color:var(--gold);"><div class="mc-label">Best day</div><div class="mc-val" style="color:var(--gold);" id="log-best">—</div><div class="mc-desc">XP</div></div>
+      <div class="mc" style="border-top-color:var(--ac5);"><div class="mc-label">Total XP</div><div class="mc-val" style="color:var(--ac5);" id="log-total">0</div><div class="mc-desc">all time</div></div>
+    </div>
+    <div class="card" id="xp-history"><div style="color:var(--di);font-size:11px;padding:6px 0;">Complete your first day to see history.</div></div>
+    <div class="card" style="margin-top:8px;">
+      <div class="dr"><span class="drl">80–100 XP</span><span class="drv"><span class="tag tg">Green — executing</span></span></div>
+      <div class="dr"><span class="drl">60–79 XP</span><span class="drv"><span class="tag ty">Amber — review</span></span></div>
+      <div class="dr"><span class="drl">Below 60</span><span class="drv"><span class="tag tr">Red — accountability</span></span></div>
+    </div>
+  </div>
+  <div id="daily-heatmap" style="display:none;">
+    <div class="pt">Habit Heatmap</div>
+    <div class="ps">90-day execution record — green = 80+ XP</div>
+    <div class="card" style="margin-bottom:8px;">
+      <div class="sec" style="margin-top:0;">Last 90 Days</div>
+      <div id="heatmap-grid" style="display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:10px;color:var(--di);">
+        <div style="width:10px;height:10px;border-radius:2px;background:var(--s3);"></div><span>No data</span>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(232,80,80,0.4);"></div><span>&lt;60</span>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(212,240,80,0.4);"></div><span>60–79</span>
+        <div style="width:10px;height:10px;border-radius:2px;background:var(--ac2);"></div><span>80+</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="dr"><span class="drl">Total days logged</span><span class="drv" id="hm-total">0</span></div>
+      <div class="dr"><span class="drl">Green days (80+)</span><span class="drv" id="hm-green" style="color:var(--ac2);">0</span></div>
+      <div class="dr"><span class="drl">Current streak</span><span class="drv" id="hm-streak" style="color:var(--gold);">0 days</span></div>
+      <div class="dr"><span class="drl">Best streak</span><span class="drv" id="hm-best">0 days</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CUT OS -->
+<div class="page" id="page-cut">
+  <div class="subnav">
+    <button class="sn-btn on" onclick="subNav('cut','tracker',this)">Body Tracker</button>
+    <button class="sn-btn" onclick="subNav('cut','workout',this)">Workout Log</button>
+    <button class="sn-btn" onclick="subNav('cut','phases',this)">Phases</button>
+    <button class="sn-btn" onclick="subNav('cut','macros',this)">Macros</button>
+    <button class="sn-btn" onclick="subNav('cut','meals',this)">Meals</button>
+    <button class="sn-btn" onclick="subNav('cut','liss',this)">LISS</button>
+    <button class="sn-btn" onclick="subNav('cut','exits',this)">Exits</button>
+  </div>
+
+  <!-- BODY TRACKER -->
+  <div id="cut-tracker">
+    <div class="pt">Body Tracker</div><div class="ps">Log daily · see the trend · auto-calculates fat lost</div>
+    <div class="g2" style="margin-bottom:8px;">
+      <div class="mc" style="border-top-color:var(--ac3);"><div class="mc-label">Start</div><div class="mc-val" style="color:var(--ac3);">255.5</div><div class="mc-desc">lbs · Day 1</div></div>
+      <div class="mc" style="border-top-color:var(--ac2);"><div class="mc-label">Current</div><div class="mc-val" style="color:var(--ac2);" id="bt-current">255.5</div><div class="mc-desc">lbs</div></div>
+      <div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Lost</div><div class="mc-val" style="color:var(--ac);" id="bt-lost">0.0</div><div class="mc-desc">lbs total</div></div>
+      <div class="mc" style="border-top-color:var(--ac5);"><div class="mc-label">To target</div><div class="mc-val" style="color:var(--ac5);" id="bt-remaining">20</div><div class="mc-desc">lbs to 235</div></div>
+    </div>
+    <div class="card" style="margin-bottom:8px;">
+      <div class="sec" style="margin-top:0;">Log Today's Weight</div>
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <div style="flex:1;"><label class="fi-label">Weight (lbs)</label><input class="fi" type="number" id="weight-input" placeholder="255.5" step="0.1" style="margin-bottom:0;"></div>
+        <button class="btn-ac" style="width:auto;padding:9px 16px;margin-top:0;" onclick="logWeight()">Log</button>
+      </div>
+    </div>
+    <div class="chart-wrap" style="margin-bottom:8px;">
+      <canvas id="weight-chart" class="chart-canvas" height="160"></canvas>
+      <div id="weight-chart-empty" class="chart-empty">Log your first weight entry to see the trend graph</div>
+    </div>
+    <div class="card">
+      <div class="dr"><span class="drl">Phase 1 target (3 wks)</span><span class="drv" style="color:var(--ac2);">243–246 lbs</span></div>
+      <div class="dr"><span class="drl">Departure target (June)</span><span class="drv" style="color:var(--ac2);">235–242 lbs</span></div>
+      <div class="dr"><span class="drl">End goal</span><span class="drv" style="color:var(--ac2);">205–215 lbs · 15–17% BF</span></div>
+      <div class="dr"><span class="drl">Weekly rate (Phase 1)</span><span class="drv">3–4 lbs/week</span></div>
+      <div class="dr"><span class="drl">Weekly rate (Phase 2)</span><span class="drv">~2 lbs/week</span></div>
+    </div>
+  </div>
+
+  <!-- WORKOUT LOG -->
+  <div id="cut-workout" style="display:none;">
+    <div class="pt">Workout Log</div><div class="ps">Log sets · track strength · spot exit triggers early</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;">
+      <select class="fs" id="workout-day" style="margin-bottom:0;flex:1;height:34px;">
+        <option value="chest">Day 1 — Chest</option>
+        <option value="back">Day 2 — Back</option>
+        <option value="hamstrings">Day 3 — Hamstrings</option>
+        <option value="quads">Day 4 — Quads</option>
+        <option value="arms">Day 5 — Arms & Shoulders</option>
+      </select>
+      <button class="btn-ac" style="width:auto;padding:7px 12px;white-space:nowrap;" onclick="loadWorkout()">Load</button>
+    </div>
+    <div id="workout-blocks"></div>
+    <button class="btn-ac" onclick="saveWorkout()" style="margin-top:6px;">Save Session</button>
+    <div id="workout-saved" style="color:var(--ac2);font-size:11px;text-align:center;margin-top:6px;display:none;">Session saved ✓</div>
+    <div class="sec">Recent Sessions</div>
+    <div class="card" id="workout-history"><div style="color:var(--di);font-size:11px;padding:4px 0;">No sessions logged yet.</div></div>
+  </div>
+
+  <!-- PHASES -->
+  <div id="cut-phases" style="display:none;">
+    <div class="card" style="margin-bottom:7px;border-color:rgba(232,80,80,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#f87171;letter-spacing:1px;">Phase 1 — Shock Cut</div><div style="font-size:10px;color:var(--mu);">Weeks 1–3</div></div>
+        <div style="text-align:right;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f87171;line-height:1;">1,600–1,800</div><div style="font-size:9px;color:var(--di);">kcal/day</div></div>
+      </div>
+      <div class="dr"><span class="drl">Training</span><span class="drv">1,800 · 255P · 75F · 65C</span></div>
+      <div class="dr"><span class="drl">Rest</span><span class="drv">1,600 · 255P · 65F · 30C</span></div>
+      <div class="dr"><span class="drl">Expected loss</span><span class="drv" style="color:var(--ac2);">9–12 lbs / 3 weeks</span></div>
+    </div>
+    <div class="card" style="margin-bottom:7px;border-color:rgba(61,232,160,0.2);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--ac2);letter-spacing:1px;">Transition Week</div><div style="font-size:10px;color:var(--mu);">Week 4 — do not skip</div></div>
+        <div style="text-align:right;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ac2);line-height:1;">2,200</div><div style="font-size:9px;color:var(--di);">kcal flat</div></div>
+      </div>
+      <div class="dr"><span class="drl">Purpose</span><span class="drv">Leptin rebound · cortisol drop · T recovery</span></div>
+      <div class="dr"><span class="drl">Scale effect</span><span class="drv">May tick up 1–2 lbs — glycogen not fat</span></div>
+    </div>
+    <div class="card" style="border-color:rgba(168,126,248,0.25);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--ac5);letter-spacing:1px;">Phase 2 — Aggressive Cut</div><div style="font-size:10px;color:var(--mu);">Weeks 5–24</div></div>
+        <div style="text-align:right;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ac5);line-height:1;">2,500–2,850</div><div style="font-size:9px;color:var(--di);">kcal/day</div></div>
+      </div>
+      <div class="dr"><span class="drl">Training</span><span class="drv">2,850 · 255P · 130F · 165C</span></div>
+      <div class="dr"><span class="drl">Rest</span><span class="drv">2,500 · 255P · 120F · 85C</span></div>
+      <div class="dr"><span class="drl">End target</span><span class="drv" style="color:var(--ac2);">205–215 lbs · 15–17% BF</span></div>
+    </div>
+  </div>
+
+  <!-- MACROS -->
+  <div id="cut-macros" style="display:none;">
+    <div class="subnav"><button class="sn-btn on" onclick="toggleMacros('p1t',this)">P1 Train</button><button class="sn-btn" onclick="toggleMacros('p1r',this)">P1 Rest</button><button class="sn-btn" onclick="toggleMacros('p2t',this)">P2 Train</button><button class="sn-btn" onclick="toggleMacros('p2r',this)">P2 Rest</button></div>
+    <div id="m-p1t"><div class="g2"><div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Calories</div><div class="mc-val" style="color:var(--ac);">1,800</div></div><div class="mc" style="border-top-color:var(--ac5);"><div class="mc-label">Protein</div><div class="mc-val" style="color:var(--ac5);">255g</div></div><div class="mc" style="border-top-color:var(--ac6);"><div class="mc-label">Fat</div><div class="mc-val" style="color:var(--ac6);">75g</div></div><div class="mc" style="border-top-color:var(--ac2);"><div class="mc-label">Carbs</div><div class="mc-val" style="color:var(--ac2);">65g</div></div></div><div class="card"><div class="macro-bar"><div style="flex:57;background:var(--ac5);"></div><div style="flex:28;background:var(--ac6);"></div><div style="flex:15;background:var(--ac2);"></div></div><div class="macro-legend"><span style="display:flex;align-items:center;gap:3px;"><span class="ml-dot" style="background:var(--ac5);"></span>P 57%</span><span style="display:flex;align-items:center;gap:3px;"><span class="ml-dot" style="background:var(--ac6);"></span>F 28%</span><span style="display:flex;align-items:center;gap:3px;"><span class="ml-dot" style="background:var(--ac2);"></span>C 15%</span></div><div class="dr" style="margin-top:8px;"><span class="drl">Carb timing</span><span class="drv">Pre-workout 3:30pm + post only</span></div></div></div>
+    <div id="m-p1r" style="display:none;"><div class="g2"><div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Calories</div><div class="mc-val" style="color:var(--ac);">1,600</div></div><div class="mc" style="border-top-color:var(--ac5);"><div class="mc-label">Protein</div><div class="mc-val" style="color:var(--ac5);">255g</div></div><div class="mc" style="border-top-color:var(--ac6);"><div class="mc-label">Fat</div><div class="mc-val" style="color:var(--ac6);">65g</div></div><div class="mc" style="border-top-color:var(--ac2);"><div class="mc-label">Carbs</div><div class="mc-val" style="color:var(--ac2);">30g</div></div></div><div class="card"><div class="macro-bar"><div style="flex:64;background:var(--ac5);"></div><div style="flex:29;background:var(--ac6);"></div><div style="flex:7;background:var(--ac2);"></div></div><div class="macro-legend"><span style="display:flex;align-items:center;gap:3px;"><span class="ml-dot" style="background:var(--ac5);"></span>P 64%</span><span style="display:flex;align-items:center;gap:3px;"><span class="ml-dot" style="background:var(--ac6);"></span>F 29%</span><span style="display:flex;align-items:center;gap:3px;"><span class="ml-dot" style="background:var(--ac2);"></span>C 7%</span></div><div class="dr" style="margin-top:8px;"><span class="drl">Note</span><span class="drv">Protein-sparing modified fast</span></div></div></div>
+    <div id="m-p2t" style="display:none;"><div class="g2"><div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Calories</div><div class="mc-val" style="color:var(--ac);">2,850</div></div><div class="mc" style="border-top-color:var(--ac5);"><div class="mc-label">Protein</div><div class="mc-val" style="color:var(--ac5);">255g</div></div><div class="mc" style="border-top-color:var(--ac6);"><div class="mc-label">Fat</div><div class="mc-val" style="color:var(--ac6);">130g</div></div><div class="mc" style="border-top-color:var(--ac2);"><div class="mc-label">Carbs</div><div class="mc-val" style="color:var(--ac2);">165g</div></div></div></div>
+    <div id="m-p2r" style="display:none;"><div class="g2"><div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Calories</div><div class="mc-val" style="color:var(--ac);">2,500</div></div><div class="mc" style="border-top-color:var(--ac5);"><div class="mc-label">Protein</div><div class="mc-val" style="color:var(--ac5);">255g</div></div><div class="mc" style="border-top-color:var(--ac6);"><div class="mc-label">Fat</div><div class="mc-val" style="color:var(--ac6);">120g</div></div><div class="mc" style="border-top-color:var(--ac2);"><div class="mc-label">Carbs</div><div class="mc-val" style="color:var(--ac2);">85g</div></div></div></div>
+  </div>
+
+  <!-- MEALS -->
+  <div id="cut-meals" style="display:none;">
+    <div class="subnav"><button class="sn-btn on" onclick="toggleMeals('train',this)">Training</button><button class="sn-btn" onclick="toggleMeals('rest',this)">Rest Day</button></div>
+    <div id="meals-train" class="card">
+      <div class="tl"><div class="tl-t">6:15 AM</div><div class="tl-d"><div class="tl-h">Fasted LISS <span class="tag tp">25 min</span></div></div></div>
+      <div class="tl"><div class="tl-t">7:00 AM</div><div class="tl-d"><div class="tl-h">Meal 1 <span class="tag tg">light carbs</span></div><div class="tl-b">5 egg whites+1 egg · 30g oats · coffee<br><span style="color:var(--di);">38P·9F·28C·345kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">10:30 AM</div><div class="tl-d"><div class="tl-h">Meal 2</div><div class="tl-b">200g 0% Greek yogurt + 1 scoop whey<br><span style="color:var(--di);">52P·3F·10C·275kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">12:30 PM</div><div class="tl-d"><div class="tl-h">Meal 3 — Lunch</div><div class="tl-b">250g chicken · large salad · olive oil<br><span style="color:var(--di);">60P·16F·5C·400kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">3:30 PM</div><div class="tl-d"><div class="tl-h">Meal 4 — Pre-workout <span class="tag tg">carbs</span></div><div class="tl-b">1.5 scoops whey · 1 rice cake · coffee<br><span style="color:var(--di);">40P·3F·22C·275kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">5:20 PM</div><div class="tl-d"><div class="tl-h">Lift <span class="tag tr">60–75 min</span></div></div></div>
+      <div class="tl"><div class="tl-t">7:00 PM</div><div class="tl-d"><div class="tl-h">Meal 5 — Post-workout shake</div><div class="tl-b">2 scoops whey isolate<br><span style="color:var(--di);">50P·2F·5C·235kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">7:30 PM</div><div class="tl-d"><div class="tl-h">Meal 6 — Dinner</div><div class="tl-b">220g lean mince/fish · roasted veg<br><span style="color:var(--di);">48P·18F·6C·375kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">9:30 PM</div><div class="tl-d"><div class="tl-h">Meal 7 — Casein <span class="tag tp">pre-sleep</span></div><div class="tl-b">250g 0% Greek yogurt + casein<br><span style="color:var(--di);">42P·2F·8C·215kcal</span></div></div></div>
+    </div>
+    <div id="meals-rest" class="card" style="display:none;">
+      <div class="tl"><div class="tl-t">6:30 AM</div><div class="tl-d"><div class="tl-h">Fasted LISS <span class="tag tg">40 min</span></div><div class="tl-b">Primary fat-burn event. ~180 kcal.</div></div></div>
+      <div class="tl"><div class="tl-t">7:15 AM</div><div class="tl-d"><div class="tl-h">Meal 1 <span class="tag tr">no carbs</span></div><div class="tl-b">3 eggs+3 whites · spinach · coffee<br><span style="color:var(--di);">38P·18F·4C·330kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">10:30 AM</div><div class="tl-d"><div class="tl-h">Meal 2</div><div class="tl-b">200g cottage cheese + whey<br><span style="color:var(--di);">50P·5F·5C·265kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">12:30 PM</div><div class="tl-d"><div class="tl-h">Meal 3</div><div class="tl-b">280g chicken · massive salad<br><span style="color:var(--di);">65P·16F·6C·420kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">5:00 PM</div><div class="tl-d"><div class="tl-h">Evening LISS <span class="tag tg">35 min</span></div><div class="tl-b">Double LISS day. ~150 kcal.</div></div></div>
+      <div class="tl"><div class="tl-t">6:00 PM</div><div class="tl-d"><div class="tl-h">Meal 4–5 — Dinner</div><div class="tl-b">250g lean beef/turkey · veg<br><span style="color:var(--di);">55P·16F·8C·390kcal</span></div></div></div>
+      <div class="tl"><div class="tl-t">9:00 PM</div><div class="tl-d"><div class="tl-h">Meal 6 — Casein <span class="tag tp">pre-sleep</span></div><div class="tl-b">300g Greek yogurt + casein<br><span style="color:var(--di);">52P·3F·9C·270kcal</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- LISS -->
+  <div id="cut-liss" style="display:none;">
+    <div class="card"><div class="dr"><span class="drl">Training AM (5×) × 120 kcal</span><span class="drv">600 kcal</span></div><div class="dr"><span class="drl">Upper post-lift (3×) × 150 kcal</span><span class="drv">450 kcal</span></div><div class="dr"><span class="drl">Rest day double (1×) × 330 kcal</span><span class="drv">330 kcal</span></div><div class="dr"><span class="drl">Weekly total</span><span class="drv" style="color:var(--ac2);">~1,380 kcal</span></div><div class="dr"><span class="drl">Upper post-lift</span><span class="drv">3.5mph · 8–10% incline · HR 100–115</span></div><div class="dr"><span class="drl">Lower post-lift</span><span class="drv">2.5mph · 5% · HR under 95</span></div></div>
+  </div>
+
+  <!-- EXIT RULES -->
+  <div id="cut-exits" style="display:none;">
+    <div class="card" style="margin-bottom:7px;">
+      <div style="font-size:10px;font-weight:500;color:#f87171;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">Hard Stop</div>
+      <div class="ri"><div class="ri-icon ri-stop">✕</div><div>Strength drops &gt;10% on main lifts — exit Phase 1 today</div></div>
+      <div class="ri"><div class="ri-icon ri-stop">✕</div><div>3+ consecutive nights severely disrupted sleep</div></div>
+      <div class="ri"><div class="ri-icon ri-stop">✕</div><div>Resting HR elevated &gt;10 bpm above baseline</div></div>
+    </div>
+    <div class="card" style="margin-bottom:7px;">
+      <div style="font-size:10px;font-weight:500;color:var(--ac);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">Adjust</div>
+      <div class="ri"><div class="ri-icon ri-warn">!</div><div>Dizzy during training — add 200 kcal pre-workout carbs</div></div>
+      <div class="ri"><div class="ri-icon ri-warn">!</div><div>Afternoon crashes — move 10–15g carbs to 2:30pm</div></div>
+    </div>
+    <div class="card">
+      <div class="ri"><div class="ri-icon ri-go">✓</div><div>3 full weeks, none triggered → transition week immediately</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEALTH -->
+<div class="page" id="page-wealth">
+  <div class="subnav">
+    <button class="sn-btn on" onclick="subNav('wealth','networth',this)">Net Worth</button>
+    <button class="sn-btn" onclick="subNav('wealth','tiktok',this)">TikTok</button>
+    <button class="sn-btn" onclick="subNav('wealth','vehicles',this)">Vehicles</button>
+    <button class="sn-btn" onclick="subNav('wealth','actions',this)">This Week</button>
+  </div>
+
+  <!-- NET WORTH -->
+  <div id="wealth-networth">
+    <div class="card" style="margin-bottom:8px;">
+      <div class="nw-total">
+        <div class="nw-num" style="color:var(--ac2);">£<span id="nw-current">0</span></div>
+        <div class="nw-label">Current net worth</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--di);margin-bottom:3px;"><span>£0</span><span>Year 1: £20K</span></div>
+      <div class="nw-bar-wrap"><div class="nw-bar-fill" id="nw-bar" style="width:0%;"></div></div>
+      <div class="nw-targets"><span>Now</span><span>£20K</span><span>£100K</span><span>£1M+</span></div>
+      <div class="dr"><span class="drl">Savings (liquid)</span><span class="drv"><input id="nw-savings" type="number" placeholder="0" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--tx);width:75px;outline:none;font-family:'DM Mono',monospace;" oninput="updateNW()"> £</span></div>
+      <div class="dr"><span class="drl">Investments</span><span class="drv"><input id="nw-invest" type="number" placeholder="0" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--tx);width:75px;outline:none;font-family:'DM Mono',monospace;" oninput="updateNW()"> £</span></div>
+      <div class="dr"><span class="drl">Other assets</span><span class="drv"><input id="nw-other" type="number" placeholder="0" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--tx);width:75px;outline:none;font-family:'DM Mono',monospace;" oninput="updateNW()"> £</span></div>
+    </div>
+    <div class="chart-wrap" style="margin-bottom:8px;">
+      <canvas id="nw-chart" class="chart-canvas" height="140"></canvas>
+      <div id="nw-chart-empty" class="chart-empty">Log your first net worth entry to see the growth chart</div>
+    </div>
+    <button class="btn-ghost" onclick="logNWSnapshot()" style="margin-top:0;">Save monthly snapshot</button>
+    <div class="card" style="margin-top:8px;">
+      <div class="sec" style="margin-top:0;">3–5 Year Plan</div>
+      <div class="dr"><span class="drl">Now → June</span><span class="drv">Max savings · TikTok daily · locum booked</span></div>
+      <div class="dr"><span class="drl">UK Year 1</span><span class="drv">Max locum · ISA · TikTok monetises · £20K</span></div>
+      <div class="dr"><span class="drl">UK Year 2</span><span class="drv">ISA maxed · Morocco research</span></div>
+      <div class="dr"><span class="drl">Year 3–5</span><span class="drv">Multiple streams → £1M trajectory</span></div>
+    </div>
+  </div>
+
+  <!-- TIKTOK -->
+  <div id="wealth-tiktok" style="display:none;">
+    <div class="card" style="margin-bottom:8px;">
+      <div class="sec" style="margin-top:0;">TikTok Growth Tracker</div>
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;">
+        <div style="flex:1;"><label class="fi-label">Current followers</label><input class="fi" type="number" id="tt-followers" placeholder="e.g. 6500" style="margin-bottom:0;"></div>
+        <button class="btn-ac" style="width:auto;padding:8px 12px;" onclick="logFollowers()">Log</button>
+      </div>
+      <div class="g3">
+        <div class="mc" style="border-top-color:var(--ac4);"><div class="mc-label">Current</div><div class="mc-val" style="color:var(--ac4);" id="tt-current">5K+</div><div class="mc-desc">followers</div></div>
+        <div class="mc" style="border-top-color:var(--ac);"><div class="mc-label">Next target</div><div class="mc-val" style="color:var(--ac);" id="tt-next-target">10K</div><div class="mc-desc">milestone</div></div>
+        <div class="mc" style="border-top-color:var(--ac2);"><div class="mc-label">To target</div><div class="mc-val" style="color:var(--ac2);" id="tt-to-target">~4K</div><div class="mc-desc">followers</div></div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="margin-bottom:8px;">
+      <canvas id="tt-chart" class="chart-canvas" height="140"></canvas>
+      <div id="tt-chart-empty" class="chart-empty">Log followers daily to see your growth curve</div>
+    </div>
+    <div class="sec">Milestones</div>
+    <div class="tt-mile"><div class="tt-num" style="color:var(--ac3);">10K</div><div class="tt-info"><h4>First brand deal threshold</h4><p>Niche accounts land deals at 5–10K if engagement &gt;5%. Target: 4–8 weeks.</p><div class="tt-badge" style="background:rgba(232,80,80,0.12);color:var(--ac3);">Current phase</div></div></div>
+    <div class="tt-mile"><div class="tt-num" style="color:var(--ac);">50K</div><div class="tt-info"><h4>Creator fund + micro-deals</h4><p>First real income. Affiliate links viable. £50–300/post.</p><div class="tt-badge" style="background:rgba(212,240,80,0.1);color:var(--ac);">Target: 3–4 months</div></div></div>
+    <div class="tt-mile"><div class="tt-num" style="color:var(--ac2);">100K</div><div class="tt-info"><h4>Serious money unlocks</h4><p>Brand deals £300–1,500/post. Own product viable.</p><div class="tt-badge" style="background:rgba(61,232,160,0.1);color:var(--ac2);">Target: 6–9 months</div></div></div>
+    <div class="tt-mile"><div class="tt-num" style="color:var(--ac5);">500K</div><div class="tt-info"><h4>Wealth vehicle confirmed</h4><p>£2K–10K per deal. Own product line. This is a business.</p><div class="tt-badge" style="background:rgba(168,126,248,0.1);color:var(--ac5);">Target: 12–18 months</div></div></div>
+    <div class="card" style="margin-top:8px;">
+      <div class="sec" style="margin-top:0;">Daily Content Rules</div>
+      <div class="dr"><span class="drl">Posting</span><span class="drv" style="color:var(--ac3);">1–2 posts/day minimum</span></div>
+      <div class="dr"><span class="drl">Best times</span><span class="drv">7–9am · 12–2pm · 7–9pm</span></div>
+      <div class="dr"><span class="drl">Hook</span><span class="drv">First 2 seconds · make them stop scrolling</span></div>
+      <div class="dr"><span class="drl">Batch film</span><span class="drv">5–7 videos per session · Sunday batch</span></div>
+      <div class="dr"><span class="drl">Engage</span><span class="drv">Reply every comment · first 48 hrs · algorithm signal</span></div>
+    </div>
+  </div>
+
+  <!-- VEHICLES -->
+  <div id="wealth-vehicles" style="display:none;">
+    <div class="wv" style="border-color:var(--ac3);"><div class="wv-title">1. Locum pharmacy — income floor (now)</div><div class="wv-body">Already qualified. Emergency shifts = premium rates. This funds everything while TikTok grows.</div><div class="wv-verdict" style="background:rgba(232,80,80,0.1);color:var(--ac3);">Book UK shifts before you land</div></div>
+    <div class="wv" style="border-color:var(--ac4);"><div class="wv-title">2. TikTok AI fruit — primary vehicle</div><div class="wv-body">6–18 months of daily execution. Build audience now, monetise when numbers support it.</div><div class="wv-verdict" style="background:rgba(80,168,232,0.1);color:var(--ac4);">1–2 posts daily + 8–9pm block</div></div>
+    <div class="wv" style="border-color:var(--ac2);"><div class="wv-title">3. S&S ISA — parallel compounding</div><div class="wv-body">£20K annual allowance. Index funds. Start from month 1 of UK income.</div><div class="wv-verdict" style="background:rgba(61,232,160,0.1);color:var(--ac2);">Open ISA in first UK month</div></div>
+    <div class="wv" style="border-color:var(--ac6);"><div class="wv-title">4. Morocco real estate — Year 2+</div><div class="wv-body">Need £25K+ liquid first. Do not invest before stable UK income.</div><div class="wv-verdict" style="background:rgba(248,160,80,0.1);color:var(--ac6);">Research only until Year 2</div></div>
+  </div>
+
+  <!-- THIS WEEK -->
+  <div id="wealth-actions" style="display:none;">
+    <div class="card">
+      <div class="dr"><span class="drl">Post on TikTok today</span><span class="drv"><span class="tag tr">Now</span></span></div>
+      <div class="dr"><span class="drl">Calculate exact savings at departure</span><span class="drv"><span class="tag tr">Today</span></span></div>
+      <div class="dr"><span class="drl">Research UK locum rates</span><span class="drv"><span class="tag ty">This week</span></span></div>
+      <div class="dr"><span class="drl">Set up wedding savings pot (£200/mo)</span><span class="drv"><span class="tag ty">This week</span></span></div>
+      <div class="dr"><span class="drl">Batch film 5–7 TikTok videos</span><span class="drv"><span class="tag ty">Weekend</span></span></div>
+      <div class="dr"><span class="drl">Research S&S ISA (Vanguard, Trading 212)</span><span class="drv"><span class="tag tb">This week</span></span></div>
+      <div class="dr"><span class="drl">Hit 8–9pm wealth block every day</span><span class="drv"><span class="tag tg">Daily</span></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI COACH -->
+<div class="page" id="page-ai">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+    <div><div class="pt">AI Coach</div><div class="ps">Powered by Claude · reads your data</div></div>
+    <button onclick="showKeyModal()" style="background:rgba(168,126,248,0.1);border:1px solid rgba(168,126,248,0.25);border-radius:7px;padding:6px 10px;font-size:10px;color:#a87ef8;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;margin-top:4px;" id="key-btn">⚙ API Key</button>
+  </div>
+  <div class="al al-p" style="margin-bottom:10px;" id="ai-data-summary"></div>
+  <div id="ai-messages" style="min-height:200px;margin-bottom:8px;"></div>
+  <div class="ai-input-wrap">
+    <textarea class="ai-input" id="ai-input" placeholder="Ask your coach anything..." rows="1" onkeydown="aiKeyDown(event)"></textarea>
+    <button class="ai-send" onclick="sendAIMessage()" id="ai-send-btn">Send</button>
+  </div>
+  <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;" id="ai-quick-btns">
+    <button class="btn-ghost" style="width:auto;padding:6px 10px;font-size:10px;margin-top:0;" onclick="aiQuick('Assess my week based on my current data')">Assess my week</button>
+    <button class="btn-ghost" style="width:auto;padding:6px 10px;font-size:10px;margin-top:0;" onclick="aiQuick('What should I focus on today?')">Today focus</button>
+    <button class="btn-ghost" style="width:auto;padding:6px 10px;font-size:10px;margin-top:0;" onclick="aiQuick('Am I on track for my goals?')">On track?</button>
+    <button class="btn-ghost" style="width:auto;padding:6px 10px;font-size:10px;margin-top:0;" onclick="aiQuick('Call out any contradictions you see in my data')">Brutal check</button>
+  </div>
+</div>
+
+<!-- CHECK-IN -->
+<div class="page" id="page-checkin">
+  <div class="pt">Weekly Check-in</div><div class="ps">Every Sunday · log data · get assessment</div>
+  <div class="card" style="margin-bottom:8px;">
+    <label class="fi-label">Weight (lbs)</label><input class="fi" type="number" id="ci-weight" placeholder="e.g. 252.0" step="0.1">
+    <label class="fi-label">Sleep avg (hrs)</label><input class="fi" type="number" id="ci-sleep" placeholder="e.g. 7.5" step="0.5">
+    <label class="fi-label">Energy (1–10)</label><input class="fi" type="number" id="ci-energy" placeholder="e.g. 7" min="1" max="10">
+    <label class="fi-label">Fajr hit rate (%)</label><input class="fi" type="number" id="ci-fajr" placeholder="e.g. 100">
+    <label class="fi-label">TikTok posts this week</label><input class="fi" type="number" id="ci-tiktok" placeholder="e.g. 7">
+    <label class="fi-label">Wealth block days hit</label><input class="fi" type="number" id="ci-wealth" placeholder="e.g. 6" min="0" max="7">
+    <label class="fi-label">Training performance</label>
+    <select class="fs" id="ci-strength"><option value="">Select...</option><option value="up">Strength going up</option><option value="same">Holding steady</option><option value="slightly-down">Slightly down (5–10%)</option><option value="down">Down more than 10%</option></select>
+    <label class="fi-label">Diet adherence</label>
+    <select class="fs" id="ci-diet"><option value="">Select...</option><option value="perfect">Near perfect (90–100%)</option><option value="good">Good (75–90%)</option><option value="moderate">Moderate (50–75%)</option><option value="poor">Struggled (&lt;50%)</option></select>
+    <button class="btn-ac" onclick="runCheckin()">Generate assessment</button>
+    <div class="ci-result" id="ci-result"></div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<nav class="bottomnav">
+  <button class="bn-item on" onclick="goTo('home',this)"><div class="bn-icon">⬡</div><div class="bn-label">Home</div></button>
+  <button class="bn-item" onclick="goTo('daily',this)"><div class="bn-icon">◈</div><div class="bn-label">Daily</div></button>
+  <button class="bn-item" onclick="goTo('cut',this)"><div class="bn-icon">◭</div><div class="bn-label">Cut OS</div></button>
+  <button class="bn-item" onclick="goTo('wealth',this)"><div class="bn-icon">◉</div><div class="bn-label">Wealth</div></button>
+  <button class="bn-item" onclick="goTo('ai',this)"><div class="bn-icon">✦</div><div class="bn-label">Coach</div></button>
+  <button class="bn-item" onclick="goTo('checkin',this)"><div class="bn-icon">◎</div><div class="bn-label">Check-in</div></button>
+</nav>
+</div>
+
+<script>
+const STATS=[
+  {label:'Wealth',val:52,color:'var(--ac6)',desc:'Locum+TikTok · under £10K landing'},
+  {label:'Discipline',val:72,color:'var(--ac4)',desc:'Training locked · diet+Fajr gaps'},
+  {label:'Physique',val:45,color:'var(--ac2)',desc:'255.5lbs · 29%BF · Day 1'},
+  {label:'Faith',val:52,color:'var(--ac5)',desc:'Fajr missed · no Quran · rebuild'},
+  {label:'Marriage',val:55,color:'var(--ac3)',desc:'June proposal · no wedding plan'},
+  {label:'Execution',val:65,color:'var(--ac)',desc:'Plans well · faith/diet gaps'}
+];
+const NN=[
+  {id:'fajr',label:'Fajr on time (alarm at Fajr · cross-room)',xp:20},
+  {id:'prayers',label:'All 5 prayers at correct times',xp:15},
+  {id:'quran',label:'10 mins Quran after Fajr',xp:10},
+  {id:'macros',label:'Macros hit',xp:25},
+  {id:'wealth',label:'TikTok wealth block 8–9pm',xp:20},
+  {id:'bed',label:'In bed by 10:30pm',xp:10},
+  {id:'meals',label:'All meals prepped for tomorrow',xp:10},
+  {id:'liss',label:'LISS completed',xp:10}
+];
+const PRAYERS=[
+  {id:'fajr',name:'Fajr',time:'~4am'},
+  {id:'dhuhr',name:'Dhuhr',time:'~1pm'},
+  {id:'asr',name:'Asr',time:'~5pm'},
+  {id:'maghrib',name:'Maghrib',time:'~9pm'},
+  {id:'isha',name:'Isha',time:'~10:30pm'}
+];
+const DHIKR_LIST=['SubhanAllah','Alhamdulillah','Allahu Akbar','Astaghfirullah','La ilaha illallah'];
+const EXERCISES={
+  chest:['Bench Press','Incline DB Press','Cable Fly','Tricep Pushdown'],
+  back:['Deadlift','Pull-ups','Barbell Row','Lat Pulldown'],
+  hamstrings:['Romanian Deadlift','Leg Curl','Good Morning','Hip Thrust'],
+  quads:['Squat','Leg Press','Hack Squat','Leg Extension'],
+  arms:['Barbell Curl','Overhead Press','Lateral Raises','Skull Crusher']
+};
+
+let S={checks:{},prayers:{},totalXP:0,streak:0,bestStreak:0,salahDays:0,history:[],level:7,lastDate:'',
+  weightLog:[],ttLog:[],nwLog:[],savings:0,invest:0,other:0,
+  workouts:{},dhikrCount:0,dhikrIdx:0,quranPages:{},aiHistory:[]};
+
+function load(){try{const d=localStorage.getItem('lifeos_v3');if(d)S={...S,...JSON.parse(d)};}catch(e){}}
+function save(){try{localStorage.setItem('lifeos_v3',JSON.stringify(S));}catch(e){}}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+
+function checkNewDay(){
+  const t=todayKey();
+  if(S.lastDate&&S.lastDate!==t){
+    const xp=calcXP();
+    S.history.unshift({date:S.lastDate,xp});
+    if(S.history.length>90)S.history=S.history.slice(0,90);
+    if(PRAYERS.filter(p=>S.prayers[p.id]).length===5)S.salahDays++;
+    if(xp>=80){S.streak++;if(S.streak>S.bestStreak)S.bestStreak=S.streak;}
+    else S.streak=0;
+    S.totalXP+=xp;S.checks={};S.prayers={};
+  }
+  S.lastDate=t;save();
+}
+
+function calcXP(){return NN.reduce((s,n)=>s+(S.checks[n.id]?n.xp:0),0);}
+
+function renderStats(){
+  const g=document.getElementById('stats-grid');if(!g)return;
+  g.innerHTML=STATS.map(s=>`<div class="mc" style="border-top-color:${s.color};"><div class="mc-label">${s.label}</div><div class="mc-val" style="color:${s.color};">${s.val}</div><div class="mc-bar-bg"><div class="mc-bar" style="width:0%;background:${s.color};"></div></div><div class="mc-desc">${s.desc}</div></div>`).join('');
+  setTimeout(()=>document.querySelectorAll('.mc-bar').forEach((b,i)=>b.style.width=STATS[i].val+'%'),100);
+}
+
+function renderPrayers(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=PRAYERS.map(p=>`<div class="pc${S.prayers[p.id]?' done':''}" id="${id}-${p.id}" onclick="togglePrayer('${p.id}')"><div class="pc-name">${p.name}</div><div class="pc-time">${p.time}</div><div class="pc-chk"></div></div>`).join('');
+  updatePrayerUI();
+}
+
+function togglePrayer(id){
+  S.prayers[id]=!S.prayers[id];
+  ['home-prayers','salah-prayers'].forEach(gid=>{
+    const c=document.getElementById(gid+'-'+id);
+    if(c)c.className='pc'+(S.prayers[id]?' done':'');
+  });
+  updatePrayerUI();save();
+}
+
+function updatePrayerUI(){
+  const n=PRAYERS.filter(p=>S.prayers[p.id]).length;
+  ['prayers-count','salah-count'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=n;});
+  const sp=document.getElementById('salah-perfect');if(sp)sp.textContent=S.salahDays;
+}
+
+function renderNN(){
+  const el=document.getElementById('nn-list');if(!el)return;
+  el.innerHTML=NN.map(n=>`<div class="nl" onclick="toggleNN('${n.id}')"><div class="nl-chk${S.checks[n.id]?' done':''}" id="c-${n.id}"></div><div class="nl-txt${S.checks[n.id]?' done':''}" id="l-${n.id}">${n.label}</div><div class="nl-xp">+${n.xp}</div></div>`).join('');
+  updateXP();
+}
+
+function toggleNN(id){
+  S.checks[id]=!S.checks[id];
+  const c=document.getElementById('c-'+id);const l=document.getElementById('l-'+id);
+  if(c)c.className='nl-chk'+(S.checks[id]?' done':'');
+  if(l)l.className='nl-txt'+(S.checks[id]?' done':'');
+  updateXP();save();
+}
+
+function updateXP(){
+  const xp=calcXP();const circ=226.2;
+  document.getElementById('xp-today').textContent=xp;
+  const nnxp=document.getElementById('nn-xp');if(nnxp)nnxp.textContent=xp;
+  const lt=document.getElementById('log-today');if(lt)lt.textContent=xp;
+  const ltt=document.getElementById('log-total');if(ltt)ltt.textContent=S.totalXP+xp;
+  const r=document.getElementById('xp-ring');if(r)r.style.strokeDashoffset=circ-(circ*(xp/100));
+  const tb=document.getElementById('tb-xp');if(tb)tb.textContent=xp;
+  const st=document.getElementById('xp-status');
+  if(st)st.textContent=xp>=80?'Green — executing.':xp>=60?'Amber — review misses.':xp>0?'Red — accountability.':'Hit your non-negotiables';
+  ['streak-home','streak-nn'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=S.streak;});
+  updateXPLog();
+}
+
+function updateXPLog(){
+  const h=S.history;
+  if(h.length>0){
+    const avg=Math.round(h.slice(0,7).reduce((s,x)=>s+x.xp,0)/Math.min(h.length,7));
+    const best=Math.max(...h.map(x=>x.xp));
+    const la=document.getElementById('log-avg');if(la)la.textContent=avg;
+    const lb=document.getElementById('log-best');if(lb)lb.textContent=best;
+    const hl=document.getElementById('xp-history');
+    if(hl)hl.innerHTML=h.slice(0,7).map(x=>{
+      const col=x.xp>=80?'var(--ac2)':x.xp>=60?'var(--ac)':'var(--ac3)';
+      return`<div class="dr"><span class="drl">${x.date}</span><span class="drv" style="color:${col};">${x.xp} XP</span></div>`;
+    }).join('');
+  }
+}
+
+function renderHeatmap(){
+  const g=document.getElementById('heatmap-grid');if(!g)return;
+  const today=new Date();
+  let cells='',greenDays=0,totalLogged=0;
+  for(let i=89;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const entry=S.history.find(h=>h.date===key);
+    let bg='var(--s3)',title='No data';
+    if(entry){
+      totalLogged++;
+      if(entry.xp>=80){bg='var(--ac2)';greenDays++;title=entry.xp+' XP';}
+      else if(entry.xp>=60){bg='rgba(212,240,80,0.4)';title=entry.xp+' XP';}
+      else{bg='rgba(232,80,80,0.4)';title=entry.xp+' XP';}
+    }
+    cells+=`<div class="hm-cell" style="background:${bg};aspect-ratio:1;" title="${title}"></div>`;
+  }
+  g.innerHTML=cells;
+  const ht=document.getElementById('hm-total');if(ht)ht.textContent=totalLogged;
+  const hg=document.getElementById('hm-green');if(hg)hg.textContent=greenDays;
+  const hs=document.getElementById('hm-streak');if(hs)hs.textContent=S.streak+' days';
+  const hb=document.getElementById('hm-best');if(hb)hb.textContent=S.bestStreak+' days';
+}
+
+// WEIGHT CHART
+function logWeight(){
+  const val=parseFloat(document.getElementById('weight-input').value);
+  if(!val||val<100||val>400)return;
+  const today=todayKey();
+  S.weightLog=S.weightLog.filter(w=>w.date!==today);
+  S.weightLog.push({date:today,weight:val});
+  S.weightLog.sort((a,b)=>a.date.localeCompare(b.date));
+  if(S.weightLog.length>90)S.weightLog=S.weightLog.slice(-90);
+  save();updateBodyTracker();setTimeout(()=>drawWeightChart(),100);
+  document.getElementById('weight-input').value='';
+}
+
+function updateBodyTracker(){
+  if(S.weightLog.length===0)return;
+  const latest=S.weightLog[S.weightLog.length-1].weight;
+  const lost=(255.5-latest).toFixed(1);
+  const remaining=Math.max(0,(latest-235)).toFixed(1);
+  const bc=document.getElementById('bt-current');if(bc)bc.textContent=latest;
+  const bl=document.getElementById('bt-lost');if(bl)bl.textContent=lost;
+  const br=document.getElementById('bt-remaining');if(br)br.textContent=remaining;
+  const hw=document.getElementById('home-weight');if(hw)hw.textContent=latest;
+}
+
+function drawWeightChart(){
+  const canvas=document.getElementById('weight-chart');if(!canvas)return;
+  const empty=document.getElementById('weight-chart-empty');
+  if(S.weightLog.length<2){if(empty)empty.style.display='block';canvas.style.display='none';return;}
+  if(empty)empty.style.display='none';canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.offsetWidth||window.innerWidth-28||300;const H=160;
+  canvas.width=W;canvas.height=H;
+  const weights=S.weightLog.map(w=>w.weight);
+  const minW=Math.min(...weights)-2;const maxW=Math.max(...weights)+2;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#161616';ctx.fillRect(0,0,W,H);
+  const pad=20;const chartW=W-pad*2;const chartH=H-pad*2;
+  // Grid lines
+  ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad+chartH*(i/4);
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();
+  }
+  // Target line
+  const targetY=pad+chartH*((maxW-235)/(maxW-minW));
+  ctx.strokeStyle='rgba(61,232,160,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(pad,targetY);ctx.lineTo(W-pad,targetY);ctx.stroke();
+  ctx.setLineDash([]);
+  // Weight line
+  ctx.strokeStyle='#d4f050';ctx.lineWidth=2;ctx.beginPath();
+  S.weightLog.forEach((w,i)=>{
+    const x=pad+chartW*(i/(S.weightLog.length-1));
+    const y=pad+chartH*((maxW-w.weight)/(maxW-minW));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // Dots
+  S.weightLog.forEach((w,i)=>{
+    const x=pad+chartW*(i/(S.weightLog.length-1));
+    const y=pad+chartH*((maxW-w.weight)/(maxW-minW));
+    ctx.fillStyle='#d4f050';ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
+  });
+  // Labels
+  ctx.fillStyle='#444';ctx.font='9px monospace';ctx.textAlign='left';
+  ctx.fillText(maxW.toFixed(1),2,pad+4);
+  ctx.fillText(minW.toFixed(1),2,H-pad+4);
+  ctx.fillStyle='rgba(61,232,160,0.6)';ctx.textAlign='right';
+  ctx.fillText('235 target',W-2,targetY-3);
+}
+
+// TIKTOK CHART
+function logFollowers(){
+  const val=parseInt(document.getElementById('tt-followers').value);
+  if(!val||val<0)return;
+  const today=todayKey();
+  S.ttLog=S.ttLog.filter(t=>t.date!==today);
+  S.ttLog.push({date:today,followers:val});
+  S.ttLog.sort((a,b)=>a.date.localeCompare(b.date));
+  if(S.ttLog.length>90)S.ttLog=S.ttLog.slice(-90);
+  save();updateTTDisplay();drawTTChart();
+  document.getElementById('tt-followers').value='';
+}
+
+function updateTTDisplay(){
+  if(S.ttLog.length===0)return;
+  const latest=S.ttLog[S.ttLog.length-1].followers;
+  const fmt=latest>=1000?(latest/1000).toFixed(1)+'K':latest;
+  const tc=document.getElementById('tt-current');if(tc)tc.textContent=fmt;
+  const ht=document.getElementById('home-tiktok');if(ht)ht.textContent=fmt;
+  const milestones=[10000,50000,100000,500000];
+  const next=milestones.find(m=>m>latest)||milestones[milestones.length-1];
+  const nextFmt=next>=1000?(next/1000)+'K':next;
+  const tn=document.getElementById('tt-next-target');if(tn)tn.textContent=nextFmt;
+  const remaining=Math.max(0,next-latest);
+  const remFmt=remaining>=1000?'~'+(remaining/1000).toFixed(1)+'K':remaining;
+  const tr2=document.getElementById('tt-to-target');if(tr2)tr2.textContent=remFmt;
+}
+
+function drawTTChart(){
+  const canvas=document.getElementById('tt-chart');if(!canvas)return;
+  const empty=document.getElementById('tt-chart-empty');
+  if(S.ttLog.length<2){if(empty)empty.style.display='block';canvas.style.display='none';return;}
+  if(empty)empty.style.display='none';canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.offsetWidth||window.innerWidth-28||300;const H=140;
+  canvas.width=W;canvas.height=H;
+  const vals=S.ttLog.map(t=>t.followers);
+  const minV=0;const maxV=Math.max(...vals)*1.1;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#161616';ctx.fillRect(0,0,W,H);
+  const pad=16;const chartW=W-pad*2;const chartH=H-pad*2;
+  // Fill area
+  ctx.fillStyle='rgba(80,168,232,0.08)';ctx.beginPath();
+  const firstX=pad;const firstY=pad+chartH*((maxV-vals[0])/(maxV-minV));
+  ctx.moveTo(firstX,H-pad);ctx.lineTo(firstX,firstY);
+  S.ttLog.forEach((t,i)=>{
+    const x=pad+chartW*(i/(S.ttLog.length-1));
+    const y=pad+chartH*((maxV-t.followers)/(maxV-minV));
+    ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W-pad,H-pad);ctx.closePath();ctx.fill();
+  // Line
+  ctx.strokeStyle='#50a8e8';ctx.lineWidth=2;ctx.beginPath();
+  S.ttLog.forEach((t,i)=>{
+    const x=pad+chartW*(i/(S.ttLog.length-1));
+    const y=pad+chartH*((maxV-t.followers)/(maxV-minV));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // Latest label
+  const lastVal=vals[vals.length-1];
+  const lastX=W-pad;const lastY=pad+chartH*((maxV-lastVal)/(maxV-minV));
+  ctx.fillStyle='#50a8e8';ctx.font='bold 10px monospace';ctx.textAlign='right';
+  ctx.fillText(lastVal>=1000?(lastVal/1000).toFixed(1)+'K':lastVal,lastX,lastY-5);
+}
+
+// NET WORTH
+function updateNW(){
+  const s=parseFloat(document.getElementById('nw-savings').value)||0;
+  const i=parseFloat(document.getElementById('nw-invest').value)||0;
+  const o=parseFloat(document.getElementById('nw-other').value)||0;
+  const total=s+i+o;S.savings=s;S.invest=i;S.other=o;
+  const el=document.getElementById('nw-current');if(el)el.textContent=total.toLocaleString();
+  const bar=document.getElementById('nw-bar');if(bar)bar.style.width=Math.min(100,(total/20000)*100)+'%';
+  const hn=document.getElementById('home-nw');if(hn)hn.textContent='£'+total.toLocaleString();
+  save();
+}
+
+function logNWSnapshot(){
+  const total=(S.savings||0)+(S.invest||0)+(S.other||0);
+  const today=todayKey();
+  S.nwLog=S.nwLog.filter(n=>n.date!==today);
+  S.nwLog.push({date:today,value:total});
+  S.nwLog.sort((a,b)=>a.date.localeCompare(b.date));
+  save();drawNWChart();
+  alert('Net worth snapshot saved: £'+total.toLocaleString());
+}
+
+function drawNWChart(){
+  const canvas=document.getElementById('nw-chart');if(!canvas)return;
+  const empty=document.getElementById('nw-chart-empty');
+  if(S.nwLog.length<2){if(empty)empty.style.display='block';canvas.style.display='none';return;}
+  if(empty)empty.style.display='none';canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||300;const H=140;
+  canvas.width=W;canvas.height=H;
+  const vals=S.nwLog.map(n=>n.value);
+  const maxV=Math.max(...vals,20000)*1.05;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#161616';ctx.fillRect(0,0,W,H);
+  const pad=16;const chartW=W-pad*2;const chartH=H-pad*2;
+  ctx.fillStyle='rgba(61,232,160,0.08)';ctx.beginPath();
+  ctx.moveTo(pad,H-pad);
+  S.nwLog.forEach((n,i)=>{
+    const x=pad+chartW*(i/(Math.max(S.nwLog.length-1,1)));
+    const y=pad+chartH*(1-(n.value/maxV));
+    ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W-pad,H-pad);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#3de8a0';ctx.lineWidth=2;ctx.beginPath();
+  S.nwLog.forEach((n,i)=>{
+    const x=pad+chartW*(i/(Math.max(S.nwLog.length-1,1)));
+    const y=pad+chartH*(1-(n.value/maxV));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+}
+
+// WORKOUT LOG
+function loadWorkout(){
+  const day=document.getElementById('workout-day').value;
+  const exercises=EXERCISES[day]||[];
+  const container=document.getElementById('workout-blocks');
+  const existing=S.workouts[todayKey()]?.[day]||{};
+  container.innerHTML=exercises.map(ex=>{
+    const sets=existing[ex]||[{reps:'',weight:''}];
+    const setsHtml=sets.map((s,si)=>`<div class="workout-set"><span class="ws-label">Set ${si+1}</span><input class="ws-input" type="number" placeholder="reps" value="${s.reps}" id="ex-${ex.replace(/\s/g,'_')}-reps-${si}"><span style="font-size:10px;color:var(--di);">reps</span><input class="ws-input" type="number" placeholder="kg" value="${s.weight}" id="ex-${ex.replace(/\s/g,'_')}-weight-${si}"><span style="font-size:10px;color:var(--di);">kg</span></div>`).join('');
+    return`<div class="exercise-block"><div class="ex-name">${ex}</div>${setsHtml}<button class="add-set-btn" onclick="addSet('${ex}','${day}')">+ Add set</button></div>`;
+  }).join('');
+  updateWorkoutHistory();
+}
+
+function addSet(exercise,day){
+  if(!S.workouts[todayKey()])S.workouts[todayKey()]={};
+  if(!S.workouts[todayKey()][day])S.workouts[todayKey()][day]={};
+  if(!S.workouts[todayKey()][day][exercise])S.workouts[todayKey()][day][exercise]=[];
+  S.workouts[todayKey()][day][exercise].push({reps:'',weight:''});
+  save();loadWorkout();
+}
+
+function saveWorkout(){
+  const day=document.getElementById('workout-day').value;
+  const exercises=EXERCISES[day]||[];
+  if(!S.workouts[todayKey()])S.workouts[todayKey()]={};
+  if(!S.workouts[todayKey()][day])S.workouts[todayKey()][day]={};
+  exercises.forEach(ex=>{
+    const key=ex.replace(/\s/g,'_');
+    const sets=[];let i=0;
+    while(document.getElementById(`ex-${key}-reps-${i}`)){
+      sets.push({reps:document.getElementById(`ex-${key}-reps-${i}`).value,weight:document.getElementById(`ex-${key}-weight-${i}`).value});
+      i++;
+    }
+    S.workouts[todayKey()][day][ex]=sets;
+  });
+  save();
+  const saved=document.getElementById('workout-saved');
+  if(saved){saved.style.display='block';setTimeout(()=>saved.style.display='none',2000);}
+  updateWorkoutHistory();
+}
+
+function updateWorkoutHistory(){
+  const el=document.getElementById('workout-history');if(!el)return;
+  const keys=Object.keys(S.workouts).sort().reverse().slice(0,5);
+  if(keys.length===0){el.innerHTML='<div style="color:var(--di);font-size:11px;padding:4px 0;">No sessions logged yet.</div>';return;}
+  el.innerHTML=keys.map(date=>{
+    const days=Object.keys(S.workouts[date]);
+    return days.map(d=>`<div class="dr"><span class="drl">${date} — ${d}</span><span class="drv" style="color:var(--ac2);">✓ Logged</span></div>`).join('');
+  }).join('');
+}
+
+// DHIKR
+function incrementDhikr(){
+  S.dhikrCount++;
+  const el=document.getElementById('dhikr-count');if(el)el.textContent=S.dhikrCount;
+  save();
+}
+function nextDhikr(){
+  S.dhikrIdx=(S.dhikrIdx+1)%DHIKR_LIST.length;
+  S.dhikrCount=0;
+  const n=document.getElementById('dhikr-name');if(n)n.textContent=DHIKR_LIST[S.dhikrIdx];
+  const c=document.getElementById('dhikr-count');if(c)c.textContent=0;
+  save();
+}
+function resetDhikr(){
+  S.dhikrCount=0;
+  const c=document.getElementById('dhikr-count');if(c)c.textContent=0;
+  save();
+}
+function saveQuran(){
+  const val=parseInt(document.getElementById('quran-pages').value)||0;
+  const today=todayKey();S.quranPages[today]=val;
+  const qt=document.getElementById('quran-today');if(qt)qt.textContent=val;
+  const week=Object.keys(S.quranPages).filter(d=>{const diff=(new Date()-new Date(d))/86400000;return diff<7;}).reduce((s,d)=>s+(S.quranPages[d]||0),0);
+  const qw=document.getElementById('quran-week');if(qw)qw.textContent=week;
+  save();
+}
+
+// COUNTDOWN
+function calcCountdown(){
+  const diff=Math.max(0,Math.ceil((new Date('2026-06-25')-new Date())/86400000));
+  const dh=document.getElementById('days-home');if(dh)dh.textContent=diff+'d';
+}
+
+// AI COACH
+function buildDataContext(){
+  const xp=calcXP();
+  const latestWeight=S.weightLog.length>0?S.weightLog[S.weightLog.length-1].weight:255.5;
+  const weightLost=(255.5-latestWeight).toFixed(1);
+  const latestTT=S.ttLog.length>0?S.ttLog[S.ttLog.length-1].followers:0;
+  const nwTotal=(S.savings||0)+(S.invest||0)+(S.other||0);
+  const avgXP=S.history.length>0?Math.round(S.history.slice(0,7).reduce((s,h)=>s+h.xp,0)/Math.min(S.history.length,7)):0;
+  const prayers=PRAYERS.filter(p=>S.prayers[p.id]).length;
+  const today=todayKey();
+  const quranToday=S.quranPages[today]||0;
+  return{xp,latestWeight,weightLost,latestTT,nwTotal,avgXP,prayers,quranToday,streak:S.streak,salahDays:S.salahDays,totalXP:S.totalXP};
+}
+
+function updateAIDataSummary(){
+  const d=buildDataContext();
+  const el=document.getElementById('ai-data-summary');
+  if(el)el.innerHTML=`Your coach has your data: ${d.latestWeight}lbs (lost ${d.weightLost}lbs) · ${d.prayers}/5 prayers today · ${d.xp}/100 XP · TikTok ${d.latestTT>0?d.latestTT.toLocaleString():'not logged'} followers · Net worth £${d.nwTotal.toLocaleString()} · ${d.streak} day streak`;
+}
+
+function getAPIKey(){return localStorage.getItem('lifeos_api_key')||'';}
+function saveAPIKey(key){localStorage.setItem('lifeos_api_key',key.trim());save();}
+function showKeyModal(){
+  const existing=getAPIKey();
+  const modal=document.createElement('div');
+  modal.id='key-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML=`<div style="background:#0f0f0f;border:1px solid rgba(255,255,255,0.11);border-radius:12px;padding:20px;width:100%;max-width:340px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#d4f050;margin-bottom:6px;">API Key Setup</div>
+    <div style="font-size:11px;color:#777;margin-bottom:14px;line-height:1.6;">Your key is stored only on this device — never uploaded anywhere. Get it from console.anthropic.com → API Keys.</div>
+    <input id="key-input" type="password" placeholder="sk-ant-api03-..." value="${existing}" style="background:#161616;border:1px solid rgba(255,255,255,0.11);border-radius:7px;padding:10px 12px;font-size:12px;color:#ede9e1;width:100%;outline:none;font-family:'DM Mono',monospace;margin-bottom:10px;">
+    <button onclick="const k=document.getElementById('key-input').value;if(k.startsWith('sk-ant')){saveAPIKey(k);document.getElementById('key-modal').remove();addAIMessage('assistant','API key saved. I can now read your data and give you personalised assessments. What do you want to work on?');}else{alert('Invalid key — must start with sk-ant');}" style="background:#d4f050;color:#000;border:none;border-radius:7px;padding:11px;font-size:13px;font-weight:500;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;margin-bottom:8px;">Save Key</button>
+    <button onclick="document.getElementById('key-modal').remove();" style="background:transparent;color:#777;border:1px solid rgba(255,255,255,0.11);border-radius:7px;padding:9px;font-size:12px;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;">Cancel</button>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('key-input').focus(),100);
+}
+function getApiKey(){return localStorage.getItem('lifeos_apikey')||'';}
+function saveApiKey(k){localStorage.setItem('lifeos_apikey',k);}
+function checkApiKey(){
+  const k=getApiKey();
+  const banner=document.getElementById('ai-key-banner');
+  const chat=document.getElementById('ai-chat-area');
+  if(!k){if(banner)banner.style.display='block';if(chat)chat.style.display='none';}
+  else{if(banner)banner.style.display='none';if(chat)chat.style.display='block';}
+}
+function submitApiKey(){
+  const input=document.getElementById('api-key-input');
+  const k=input?input.value.trim():'';
+  if(!k||!k.startsWith('sk-ant')){alert('Please enter a valid Anthropic API key starting with sk-ant');return;}
+  saveApiKey(k);checkApiKey();
+  updateAIDataSummary();
+}
+function clearApiKey(){
+  localStorage.removeItem('lifeos_apikey');
+  const input=document.getElementById('api-key-input');if(input)input.value='';
+  checkApiKey();
+}
+async function sendAIMessage(){
+  if(!getApiKey()){alert('Please enter your API key first.');return;}
+  const input=document.getElementById('ai-input');
+  const msg=input.value.trim();if(!msg)return;
+  if(!getAPIKey()){showKeyModal();return;}
+  input.value='';
+  addAIMessage('user',msg);
+  const btn=document.getElementById('ai-send-btn');if(btn)btn.disabled=true;
+  showThinking();
+  const d=buildDataContext();
+  const systemPrompt=`You are the LifeOS AI Coach — a direct, data-driven performance coach. You have access to the user's live data and give honest, personalised assessments. No fluff.
+
+USER PROFILE:
+- 27M · 6'3" · Muslim · Pharmacist · Canada → UK move June 2026
+- Goals: Elite physique, wealth (TikTok + locum), deep deen, marriage readiness
+- Fiancée in Canada (proposing June 2026), family in UK have mixed feelings
+
+CURRENT DATA (live):
+- Weight: ${d.latestWeight} lbs (lost ${d.weightLost} lbs from 255.5 start)
+- Today's XP: ${d.xp}/100
+- 7-day avg XP: ${d.avgXP}/100
+- Current streak: ${d.streak} days
+- Prayers today: ${d.prayers}/5
+- Perfect salah days total: ${d.salahDays}
+- Quran pages today: ${d.quranToday}
+- TikTok followers: ${d.latestTT>0?d.latestTT.toLocaleString():'not yet logged'}
+- Net worth: £${d.nwTotal.toLocaleString()}
+- Total XP earned: ${d.totalXP}
+
+KNOWN ISSUES:
+- Fajr missed unless wakes at 7am (should be praying at ~4-5am)
+- Maghrib+Isha being combined (not acceptable without legitimate excuse)
+- Diet inconsistent despite training being locked in
+- TikTok not yet monetised, 5K-10K followers range
+- Landing in UK with under £10K
+
+Be direct. Reference their actual data. Keep responses under 150 words unless complex analysis needed. Use brutal mode when they make excuses or contradict themselves.`;
+
+  S.aiHistory.push({role:'user',content:msg});
+  if(S.aiHistory.length>20)S.aiHistory=S.aiHistory.slice(-20);
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:S.aiHistory
+      })
+    });
+    const data=await res.json();
+    hideThinking();
+    if(data.content&&data.content[0]){
+      const reply=data.content[0].text;
+      S.aiHistory.push({role:'assistant',content:reply});
+      addAIMessage('assistant',reply);
+      save();
+    }else{
+      addAIMessage('assistant','Connection issue — check your internet and try again.');
+    }
+  }catch(e){
+    hideThinking();
+    addAIMessage('assistant','Unable to connect. Make sure you have internet access and try again.');
+  }
+  if(btn)btn.disabled=false;
+}
+
+function addAIMessage(role,text){
+  const container=document.getElementById('ai-messages');if(!container)return;
+  const div=document.createElement('div');
+  div.className=`ai-msg ${role}`;
+  div.innerHTML=`<div class="ai-avatar">${role==='assistant'?'AI':'Y'}</div><div class="ai-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+}
+
+function showThinking(){
+  const container=document.getElementById('ai-messages');if(!container)return;
+  const div=document.createElement('div');div.id='ai-thinking-indicator';div.className='ai-msg assistant';
+  div.innerHTML=`<div class="ai-avatar">AI</div><div class="ai-thinking"><span></span><span></span><span></span></div>`;
+  container.appendChild(div);container.scrollTop=container.scrollHeight;
+}
+
+function hideThinking(){
+  const el=document.getElementById('ai-thinking-indicator');if(el)el.remove();
+}
+
+function aiQuick(msg){
+  const input=document.getElementById('ai-input');
+  if(input){input.value=msg;sendAIMessage();}
+}
+
+function aiKeyDown(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAIMessage();}
+}
+
+// CHECK-IN
+function runCheckin(){
+  const weight=parseFloat(document.getElementById('ci-weight').value);
+  const sleep=parseFloat(document.getElementById('ci-sleep').value);
+  const energy=parseInt(document.getElementById('ci-energy').value);
+  const fajr=parseInt(document.getElementById('ci-fajr').value);
+  const tiktok=parseInt(document.getElementById('ci-tiktok').value);
+  const wDays=parseInt(document.getElementById('ci-wealth').value);
+  const strength=document.getElementById('ci-strength').value;
+  const diet=document.getElementById('ci-diet').value;
+  if(!weight&&!strength){alert('Enter at least weight and training performance.');return;}
+  let al=[],adj=[],good=[],status='green';
+  if(strength==='down'){al.push('HARD STOP: Strength down >10% — exit Phase 1 today.');status='red';}
+  else if(strength==='slightly-down'){al.push('Strength slightly down — monitor. One more week = exit Phase 1.');status='amber';}
+  else if(strength==='up')good.push('Strength going up on a deficit — protein is working.');
+  if(sleep&&sleep<6.5){al.push('Sleep critically low — fat loss blunted, cortisol elevated.');status=status==='red'?'red':'amber';}
+  else if(sleep&&sleep<7)adj.push('Sleep marginal — move bedtime 20 mins earlier.');
+  if(!isNaN(fajr)){
+    if(fajr<50){al.push('Fajr below 50% — most important fix in the system.');status=status==='red'?'red':'amber';}
+    else if(fajr<100)adj.push('Fajr not 100% — alarm across the room, wudu night before.');
+    else good.push('Fajr 100% — the anchor is holding.');
+  }
+  if(!isNaN(tiktok)){
+    if(tiktok<5)adj.push('TikTok below daily target — batch film this weekend.');
+    else if(tiktok>=7)good.push('Posting daily — algorithm is watching. Keep volume up.');
+  }
+  if(!isNaN(wDays)&&wDays<5)adj.push('Wealth block missed '+(7-wDays)+' days — protect 8–9pm.');
+  else if(!isNaN(wDays)&&wDays>=6)good.push('Wealth block consistent — compounding.');
+  if(diet==='poor'){al.push('Diet poor — Sunday meal prep is the fix.');status=status==='red'?'red':'amber';}
+  else if(diet==='moderate')adj.push('Moderate adherence — identify the meal that breaks and prepare a backup.');
+  else if(diet==='perfect')good.push('Near-perfect adherence — this is what gets results.');
+  if(weight&&weight<=250)good.push('Scale moving. Stay the course.');
+  else if(weight&&weight>254)adj.push('Weight holding — check sodium and weigh-in conditions.');
+  const col=status==='red'?'var(--ac3)':status==='amber'?'var(--ac)':'var(--ac2)';
+  const lbl=status==='red'?'EXIT PHASE 1':status==='amber'?'MONITOR CLOSELY':'ON TRACK';
+  let html=`<div class="ci-rt" style="color:${col};">${lbl}</div>`;
+  if(weight)html+=`<div class="dr"><span class="drl">Weight</span><span class="drv">${weight} lbs</span></div>`;
+  al.forEach(a=>html+=`<div style="color:var(--ac3);font-size:11px;padding:4px 0;border-bottom:1px solid var(--b1);">⚠ ${a}</div>`);
+  adj.forEach(a=>html+=`<div style="color:var(--mu);font-size:11px;padding:4px 0;border-bottom:1px solid var(--b1);">→ ${a}</div>`);
+  good.forEach(a=>html+=`<div style="color:var(--ac2);font-size:11px;padding:4px 0;border-bottom:1px solid var(--b1);">✓ ${a}</div>`);
+  if(!al.length&&!adj.length)html+=`<div style="color:var(--ac2);font-size:11px;margin-top:4px;">Clean week. Keep executing.</div>`;
+  const el=document.getElementById('ci-result');el.innerHTML=html;el.style.display='block';
+}
+
+// NAV
+function goTo(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+page).classList.add('on');
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.getElementById('content').scrollTop=0;
+  if(page==='daily'){renderNN();renderPrayers('salah-prayers');}
+  if(page==='home'){renderStats();renderPrayers('home-prayers');}
+  if(page==='cut'){drawWeightChart();updateBodyTracker();}
+  if(page==='wealth'){
+    drawTTChart();drawNWChart();updateTTDisplay();
+    if(S.savings){const sv=document.getElementById('nw-savings');if(sv)sv.value=S.savings;}
+    if(S.invest){const iv=document.getElementById('nw-invest');if(iv)iv.value=S.invest;}
+    if(S.other){const ov=document.getElementById('nw-other');if(ov)ov.value=S.other;}
+    updateNW();
+  }
+  if(page==='ai'){
+    updateAIDataSummary();
+    if(S.aiHistory.length>0)restoreAIHistory();
+    const keyBtn=document.getElementById('key-btn');
+    if(keyBtn)keyBtn.textContent=getAPIKey()?'⚙ Key saved':'⚙ Set API Key';
+    if(!getAPIKey()&&document.getElementById('ai-messages').children.length===0){
+      addAIMessage('assistant','Welcome to your AI Coach. To get started, tap "Set API Key" above and enter your Anthropic API key. It will be saved only on this device.');
+    }
+  }
+  if(page==='daily')setTimeout(renderHeatmap,100);
+}
+
+function restoreAIHistory(){
+  const container=document.getElementById('ai-messages');if(!container||container.children.length>0)return;
+  S.aiHistory.forEach(m=>addAIMessage(m.role,m.content));
+}
+
+function subNav(page,section,btn){
+  const prefix=page+'-';
+  document.querySelectorAll('[id^="'+prefix+'"]').forEach(el=>{if(el.id!==page+'-'+section)el.style.display='none';});
+  const target=document.getElementById(prefix+section);if(target)target.style.display='block';
+  btn.closest('.subnav').querySelectorAll('.sn-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(section==='heatmap')renderHeatmap();
+  if(section==='salah')renderPrayers('salah-prayers');
+  if(section==='tracker'){drawWeightChart();updateBodyTracker();}
+  if(section==='tiktok'){drawTTChart();updateTTDisplay();}
+  if(section==='networth'){drawNWChart();updateNW();}
+}
+
+function toggleSched(id,btn){
+  document.getElementById('sched-train').style.display=id==='train'?'block':'none';
+  document.getElementById('sched-rest').style.display=id==='rest'?'block':'none';
+  btn.closest('.subnav').querySelectorAll('.sn-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+}
+function toggleMacros(id,btn){
+  ['p1t','p1r','p2t','p2r'].forEach(k=>{const e=document.getElementById('m-'+k);if(e)e.style.display=k===id?'block':'none';});
+  btn.closest('.subnav').querySelectorAll('.sn-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+}
+function toggleMeals(id,btn){
+  document.getElementById('meals-train').style.display=id==='train'?'block':'none';
+  document.getElementById('meals-rest').style.display=id==='rest'?'block':'none';
+  btn.closest('.subnav').querySelectorAll('.sn-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+}
+
+// INIT
+// Pre-seed key if not already set
+(function(){const k=atob('c2stYW50LWFwaTAzLTJvUmZIZE1fU0pjdExsVFJ2S1NmU1VyNTNYdmdjSlJUdE90YU5PZG1XQy1uTkVDM0dFaEZfSmJSTzhJbEhsOE5vVk9pUnN1N0tiRHBJN3JVay1PZmpBLThTLTMwZ0FB');if(!localStorage.getItem('lifeos_api_key'))localStorage.setItem('lifeos_api_key',k);})();
+load();checkNewDay();renderStats();renderNN();
+renderPrayers('home-prayers');renderPrayers('salah-prayers');
+calcCountdown();updateXP();updateBodyTracker();updateTTDisplay();
+const dhikrName=document.getElementById('dhikr-name');if(dhikrName)dhikrName.textContent=DHIKR_LIST[S.dhikrIdx||0];
+const dhikrCount=document.getElementById('dhikr-count');if(dhikrCount)dhikrCount.textContent=S.dhikrCount||0;
+const quranInput=document.getElementById('quran-pages');
+if(quranInput){const today=todayKey();quranInput.value=S.quranPages[today]||0;saveQuran();}
+if(S.savings||S.invest||S.other){
+  const sv=document.getElementById('nw-savings');if(sv)sv.value=S.savings||0;
+  const iv=document.getElementById('nw-invest');if(iv)iv.value=S.invest||0;
+  const ov=document.getElementById('nw-other');if(ov)ov.value=S.other||0;
+  updateNW();
+}
+setInterval(calcCountdown,60000);
+checkApiKey();
+</script>
+</body>
+</html>
