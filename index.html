@@ -30,7 +30,20 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-
 .tb-xp span{color:var(--ac);}
 .tb-lvl{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);}
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
-.bottomnav{background:var(--s1);border-top:1px solid var(--b1);display:flex;padding-bottom:calc(env(safe-area-inset-bottom, 16px) + 4px);flex-shrink:0;position:relative;z-index:100;}
+.bottomnav{
+  background:var(--s1);
+  border-top:1px solid var(--b1);
+  display:flex;
+  flex-shrink:0;
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:1000;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.bn-item{padding-top:10px;padding-bottom:10px;}
+.content{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px));}
 .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;cursor:pointer;color:var(--di);transition:color 0.15s;gap:2px;border:none;background:transparent;}
 .bn-item.on{color:var(--ac);}
 .bn-icon{font-size:16px;line-height:1;}
@@ -840,7 +853,7 @@ function logWeight(){
   S.weightLog.push({date:today,weight:val});
   S.weightLog.sort((a,b)=>a.date.localeCompare(b.date));
   if(S.weightLog.length>90)S.weightLog=S.weightLog.slice(-90);
-  save();updateBodyTracker();setTimeout(()=>drawWeightChart(),100);
+  save();updateBodyTracker();requestAnimationFrame(()=>requestAnimationFrame(()=>drawWeightChart()));
   document.getElementById('weight-input').value='';
 }
 
@@ -856,77 +869,67 @@ function updateBodyTracker(){
 }
 
 function drawWeightChart(){
-  const canvas=document.getElementById('weight-chart');if(!canvas)return;
+  const canvas=document.getElementById('weight-chart');
+  if(!canvas)return;
   const empty=document.getElementById('weight-chart-empty');
-  if(S.weightLog.length<2){if(empty)empty.style.display='block';canvas.style.display='none';return;}
-  if(empty)empty.style.display='none';canvas.style.display='block';
-  const ctx=canvas.getContext('2d');
-  const W=canvas.parentElement.offsetWidth||window.innerWidth-28||300;const H=160;
+  if(S.weightLog.length<2){
+    if(empty){empty.style.display='block';}
+    canvas.style.display='none';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  canvas.style.display='block';
+  // Use parent width with fallback
+  const W=Math.floor(canvas.closest('.chart-wrap').getBoundingClientRect().width)||Math.floor(window.innerWidth-28)||300;
+  const H=160;
   canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
   const weights=S.weightLog.map(w=>w.weight);
-  const minW=Math.min(...weights)-2;const maxW=Math.max(...weights)+2;
-  ctx.clearRect(0,0,W,H);
+  const minW=Math.min(...weights)-3;
+  const maxW=Math.max(...weights)+3;
+  const pad=24;
+  const chartW=W-pad*2;
+  const chartH=H-pad*2;
+  // Background
   ctx.fillStyle='#161616';ctx.fillRect(0,0,W,H);
-  const pad=20;const chartW=W-pad*2;const chartH=H-pad*2;
   // Grid lines
-  ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;
   for(let i=0;i<=4;i++){
     const y=pad+chartH*(i/4);
+    ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();
+    const val=(maxW-(maxW-minW)*(i/4)).toFixed(1);
+    ctx.fillStyle='#444';ctx.font='9px monospace';ctx.textAlign='right';
+    ctx.fillText(val,pad-4,y+3);
   }
-  // Target line
-  const targetY=pad+chartH*((maxW-235)/(maxW-minW));
-  ctx.strokeStyle='rgba(61,232,160,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
-  ctx.beginPath();ctx.moveTo(pad,targetY);ctx.lineTo(W-pad,targetY);ctx.stroke();
-  ctx.setLineDash([]);
+  // Target line at 235
+  if(235>=minW&&235<=maxW){
+    const targetY=pad+chartH*((maxW-235)/(maxW-minW));
+    ctx.strokeStyle='rgba(61,232,160,0.4)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(pad,targetY);ctx.lineTo(W-pad,targetY);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(61,232,160,0.7)';ctx.font='9px monospace';ctx.textAlign='left';
+    ctx.fillText('235 target',pad+4,targetY-3);
+  }
   // Weight line
   ctx.strokeStyle='#d4f050';ctx.lineWidth=2;ctx.beginPath();
   S.weightLog.forEach((w,i)=>{
-    const x=pad+chartW*(i/(S.weightLog.length-1));
+    const x=pad+(S.weightLog.length===1?chartW/2:chartW*(i/(S.weightLog.length-1)));
     const y=pad+chartH*((maxW-w.weight)/(maxW-minW));
     i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
   ctx.stroke();
-  // Dots
+  // Dots + latest label
   S.weightLog.forEach((w,i)=>{
-    const x=pad+chartW*(i/(S.weightLog.length-1));
+    const x=pad+(S.weightLog.length===1?chartW/2:chartW*(i/(S.weightLog.length-1)));
     const y=pad+chartH*((maxW-w.weight)/(maxW-minW));
     ctx.fillStyle='#d4f050';ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
   });
-  // Labels
-  ctx.fillStyle='#444';ctx.font='9px monospace';ctx.textAlign='left';
-  ctx.fillText(maxW.toFixed(1),2,pad+4);
-  ctx.fillText(minW.toFixed(1),2,H-pad+4);
-  ctx.fillStyle='rgba(61,232,160,0.6)';ctx.textAlign='right';
-  ctx.fillText('235 target',W-2,targetY-3);
-}
-
-// TIKTOK CHART
-function logFollowers(){
-  const val=parseInt(document.getElementById('tt-followers').value);
-  if(!val||val<0)return;
-  const today=todayKey();
-  S.ttLog=S.ttLog.filter(t=>t.date!==today);
-  S.ttLog.push({date:today,followers:val});
-  S.ttLog.sort((a,b)=>a.date.localeCompare(b.date));
-  if(S.ttLog.length>90)S.ttLog=S.ttLog.slice(-90);
-  save();updateTTDisplay();drawTTChart();
-  document.getElementById('tt-followers').value='';
-}
-
-function updateTTDisplay(){
-  if(S.ttLog.length===0)return;
-  const latest=S.ttLog[S.ttLog.length-1].followers;
-  const fmt=latest>=1000?(latest/1000).toFixed(1)+'K':latest;
-  const tc=document.getElementById('tt-current');if(tc)tc.textContent=fmt;
-  const ht=document.getElementById('home-tiktok');if(ht)ht.textContent=fmt;
-  const milestones=[10000,50000,100000,500000];
-  const next=milestones.find(m=>m>latest)||milestones[milestones.length-1];
-  const nextFmt=next>=1000?(next/1000)+'K':next;
-  const tn=document.getElementById('tt-next-target');if(tn)tn.textContent=nextFmt;
-  const remaining=Math.max(0,next-latest);
-  const remFmt=remaining>=1000?'~'+(remaining/1000).toFixed(1)+'K':remaining;
-  const tr2=document.getElementById('tt-to-target');if(tr2)tr2.textContent=remFmt;
+  // Latest value label
+  const last=S.weightLog[S.weightLog.length-1];
+  const lastX=W-pad;
+  const lastY=pad+chartH*((maxW-last.weight)/(maxW-minW));
+  ctx.fillStyle='#d4f050';ctx.font='bold 10px monospace';ctx.textAlign='right';
+  ctx.fillText(last.weight+'lbs',lastX,lastY-6);
 }
 
 function drawTTChart(){
@@ -1313,7 +1316,7 @@ function goTo(page,el){
   document.getElementById('content').scrollTop=0;
   if(page==='daily'){renderNN();renderPrayers('salah-prayers');}
   if(page==='home'){renderStats();renderPrayers('home-prayers');}
-  if(page==='cut'){drawWeightChart();updateBodyTracker();}
+  if(page==='cut'){updateBodyTracker();requestAnimationFrame(()=>requestAnimationFrame(()=>drawWeightChart()));}
   if(page==='wealth'){
     drawTTChart();drawNWChart();updateTTDisplay();
     if(S.savings){const sv=document.getElementById('nw-savings');if(sv)sv.value=S.savings;}
@@ -1346,7 +1349,7 @@ function subNav(page,section,btn){
   btn.classList.add('on');
   if(section==='heatmap')renderHeatmap();
   if(section==='salah')renderPrayers('salah-prayers');
-  if(section==='tracker'){drawWeightChart();updateBodyTracker();}
+  if(section==='tracker'){updateBodyTracker();requestAnimationFrame(()=>requestAnimationFrame(()=>drawWeightChart()));}
   if(section==='tiktok'){drawTTChart();updateTTDisplay();}
   if(section==='networth'){drawNWChart();updateNW();}
 }
