@@ -1163,7 +1163,7 @@ Be direct. Reference their actual data. Keep responses under 150 words unless co
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1000,
